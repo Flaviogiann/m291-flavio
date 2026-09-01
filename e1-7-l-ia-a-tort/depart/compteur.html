@@ -26,10 +26,12 @@
     let n = 0;
 
     const bouton = document.getElementById("plus");
+    const affiche = document.getElementById("affiche");
 
     bouton.addEventListener("click", function () {
       n = n + 1;
       console.log("n vaut maintenant", n);
+      affiche.textContent = n;
     });
   </script>
 </body>
