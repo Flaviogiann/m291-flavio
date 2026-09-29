@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="./films.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#030407;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#9CC8FF}a:hover{color:#C4DEFF}
+button{font-family:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+input{font-family:inherit}
+::placeholder{color:rgba(235,238,245,.55)}
+@keyframes lg-in{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@keyframes lg-up{from{opacity:0;transform:translateY(40px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes lg-toast{0%{opacity:0;transform:translateY(-14px) scale(.9)}12%{opacity:1;transform:none}84%{opacity:1;transform:none}100%{opacity:0;transform:translateY(-8px) scale(.96)}}
+@keyframes lg-drift{0%,100%{transform:translate(0,0)}50%{transform:translate(18px,-22px)}}
+.lg-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.lg-scroll::-webkit-scrollbar{display:none}
+.lg-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
+.lg-chips::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width:100%;max-width:430px;margin:0 auto;height:100vh;position:relative;overflow:hidden;background:#07080D;color:#F5F6FA;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',Manrope,sans-serif;display:flex;flex-direction:column">
+
+  <div aria-hidden="true" style="position:absolute;inset:0;overflow:hidden;pointer-events:none">
+    <div style="position:absolute;width:340px;height:340px;left:-120px;top:-90px;border-radius:50%;background:radial-gradient(circle,rgba(92,120,255,.45) 0%,rgba(92,120,255,0) 70%);filter:blur(20px);animation:lg-drift 18s ease-in-out infinite"></div>
+    <div style="position:absolute;width:300px;height:300px;right:-110px;top:220px;border-radius:50%;background:radial-gradient(circle,rgba(255,120,90,.32) 0%,rgba(255,120,90,0) 70%);filter:blur(24px);animation:lg-drift 22s ease-in-out infinite reverse"></div>
+    <div style="position:absolute;width:320px;height:320px;left:-60px;bottom:-120px;border-radius:50%;background:radial-gradient(circle,rgba(70,200,190,.26) 0%,rgba(70,200,190,0) 70%);filter:blur(24px);animation:lg-drift 26s ease-in-out infinite"></div>
+  </div>
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;min-height:0;animation:lg-in .35s cubic-bezier(.2,.8,.2,1) both">
+      <div style="padding:28px 20px 12px">
+        <h1 style="margin:0 0 16px;font-weight:700;font-size:34px;letter-spacing:-.9px;line-height:1.05;color:#FFFFFF">Watchlist</h1>
+        <div style="display:flex;align-items:center;gap:10px;height:50px;padding:0 8px 0 16px;border-radius:25px;background:rgba(255,255,255,.055);backdrop-filter:blur(26px) saturate(200%);-webkit-backdrop-filter:blur(26px) saturate(200%);border:1px solid rgba(255,255,255,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 30px rgba(0,0,0,.3)">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="5.5" stroke="rgba(235,238,245,.75)" stroke-width="1.8"/><line x1="11.6" y1="11.6" x2="16" y2="16" stroke="rgba(235,238,245,.75)" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <input type="text" value="{{ query }}" onInput="{{ onSearch }}" placeholder="Chercher un film" aria-label="Chercher un film par titre" style="flex:1;min-width:0;height:48px;background:transparent;border:0;outline:none;color:#FFFFFF;font-size:17px;letter-spacing:-.2px" />
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearSearch }}" aria-label="Effacer la recherche" style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:transparent;border:0;border-radius:22px" style-focus="outline:2px solid #9CC8FF;outline-offset:-4px">
+              <span style="width:20px;height:20px;border-radius:10px;background:rgba(255,255,255,.28);color:#0B0C10;font-size:13px;font-weight:700;line-height:20px;text-align:center">×</span>
+            </button>
+          </sc-if>
+        </div>
+        <div class="lg-chips" role="group" aria-label="Filtrer par genre" style="margin:12px -20px 0;padding:2px 20px 4px">
+          <sc-for list="{{ genres }}" as="g" hint-placeholder-count="4">
+            <button onClick="{{ g.go }}" aria-pressed="{{ g.active }}" style="{{ g.style }}">{{ g.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="lg-scroll" style="flex:1;min-height:0;padding:4px 20px 120px">
+        <sc-if value="{{ showRecents }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:8px 0 6px">
+            <div style="font-size:13px;font-weight:600;color:rgba(235,238,245,.62);margin-bottom:10px">Recherches récentes</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ recents }}" as="r" hint-placeholder-count="2">
+                <button onClick="{{ r.go }}" style="display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;border-radius:22px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.12);color:#F5F6FA;font-size:15px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)" style-hover="background:rgba(255,255,255,.13)" style-focus="outline:2px solid #9CC8FF;outline-offset:2px"><span style="color:rgba(235,238,245,.55);font-size:13px">↺</span>{{ r.q }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:14px 0 12px">
+          <h2 style="margin:0;font-weight:700;font-size:22px;letter-spacing:-.5px;color:#FFFFFF">{{ gridTitle }}</h2>
+          <span style="font-size:14px;color:rgba(235,238,245,.62)">{{ gridCount }}</span>
+        </div>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:10px 0 18px;padding:22px 20px;border-radius:24px;background:rgba(255,80,70,.1);border:1px solid rgba(255,110,100,.28);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:inset 0 1px 0 rgba(255,255,255,.12)">
+            <p style="margin:0;color:#FF8A80;font-size:16px;line-height:1.5;letter-spacing:-.2px">Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.</p>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 14px">
+          <sc-for list="{{ grid }}" as="f" hint-placeholder-count="6">
+            <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="display:block;text-align:left;padding:0;background:transparent;border:0;border-radius:20px" style-active="transform:scale(.97)" style-focus="outline:2px solid #9CC8FF;outline-offset:4px">
+              <div style="position:relative;aspect-ratio:2/3;border-radius:20px;overflow:hidden;box-shadow:0 16px 36px rgba(0,0,0,.5),inset 0 0 0 1px rgba(255,255,255,.1)">
+                <div style="{{ f.poster }}"></div>
+                <div style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(255,255,255,.18) 0%,rgba(255,255,255,0) 38%);border-radius:20px"></div>
+                <div style="position:absolute;inset:0;border-radius:20px;box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 0 0 1px rgba(255,255,255,.1)"></div>
+                <div style="position:absolute;left:14px;right:14px;bottom:14px;font-weight:700;font-size:15px;line-height:1.2;letter-spacing:-.3px;color:rgba(255,255,255,.95);text-shadow:0 2px 12px rgba(0,0,0,.5)">{{ f.t }}</div>
+                <sc-if value="{{ f.hasStatus }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:10px;right:10px;display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:14px;background:rgba(20,22,30,.18);backdrop-filter:blur(18px) saturate(180%);-webkit-backdrop-filter:blur(18px) saturate(180%);border:1px solid rgba(255,255,255,.2);color:#FFFFFF;font-size:11px;font-weight:600;white-space:nowrap">
+                    <span style="{{ f.dot }}"></span>{{ f.status }}
+                  </div>
+                </sc-if>
+              </div>
+              <div style="padding:10px 4px 0">
+                <div style="font-size:15px;font-weight:600;letter-spacing:-.2px;color:#FFFFFF;line-height:1.3">{{ f.t }}</div>
+                <div style="font-size:13px;color:rgba(235,238,245,.62);margin-top:3px">{{ f.sub }}</div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;min-height:0;animation:lg-in .35s cubic-bezier(.2,.8,.2,1) both">
+      <div style="padding:28px 20px 12px">
+        <h1 style="margin:0 0 16px;font-weight:700;font-size:34px;letter-spacing:-.9px;line-height:1.05;color:#FFFFFF">Ma Watchlist</h1>
+        <div role="tablist" style="display:flex;padding:4px;border-radius:24px;background:rgba(255,255,255,.05);backdrop-filter:blur(26px) saturate(200%);-webkit-backdrop-filter:blur(26px) saturate(200%);border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="lg-scroll" style="flex:1;min-height:0;padding:8px 20px 120px">
+        <div style="font-size:14px;color:rgba(235,238,245,.62);padding:0 4px 12px">{{ listCount }}</div>
+
+        <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:34px 24px 28px;border-radius:28px;text-align:center;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)">
+            <p style="margin:0 0 6px;font-weight:700;font-size:20px;letter-spacing:-.4px;color:#FFFFFF">{{ emptyTitle }}</p>
+            <p style="margin:0 0 22px;font-size:15px;line-height:1.55;color:rgba(235,238,245,.66)">Cherchez un titre et ajoutez-le pour le retrouver ici.</p>
+            <button onClick="{{ goHome }}" style="min-height:50px;padding:0 26px;border-radius:25px;background:#FFFFFF;border:0;color:#0B0C10;font-size:16px;font-weight:600;letter-spacing:-.2px;box-shadow:0 8px 24px rgba(255,255,255,.15)" style-active="transform:scale(.97)" style-focus="outline:2px solid #9CC8FF;outline-offset:3px">Chercher un film</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasRows }}" hint-placeholder-val="{{ false }}">
+          <div style="border-radius:26px;overflow:hidden;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(30px) saturate(160%);-webkit-backdrop-filter:blur(30px) saturate(160%);box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 16px 40px rgba(0,0,0,.3)">
+            <sc-for list="{{ rows }}" as="f" hint-placeholder-count="0">
+              <div style="{{ f.rowStyle }}">
+                <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="flex:1;min-width:0;display:flex;gap:14px;align-items:center;padding:0;background:transparent;border:0;text-align:left" style-focus="outline:2px solid #9CC8FF;outline-offset:4px;border-radius:12px">
+                  <div style="position:relative;width:54px;flex:none;aspect-ratio:2/3;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)">
+                    <div style="{{ f.poster }}"></div>
+                  </div>
+                  <div style="min-width:0">
+                    <div style="font-size:16px;font-weight:600;letter-spacing:-.3px;color:#FFFFFF;line-height:1.25">{{ f.t }}</div>
+                    <div style="font-size:13px;color:rgba(235,238,245,.62);margin-top:4px">{{ f.meta }}</div>
+                  </div>
+                </button>
+                <button onClick="{{ f.cycle }}" aria-label="{{ f.cycleAria }}" style="width:44px;height:44px;flex:none;border-radius:22px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);color:#FFFFFF;font-size:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.2)" style-active="transform:scale(.92)" style-focus="outline:2px solid #9CC8FF;outline-offset:2px">→</button>
+                <button onClick="{{ f.remove }}" aria-label="{{ f.removeAria }}" style="width:44px;height:44px;flex:none;border-radius:22px;background:rgba(255,80,70,.12);border:1px solid rgba(255,110,100,.24);color:#FF8A80;font-size:17px" style-active="transform:scale(.92)" style-focus="outline:2px solid #FF8A80;outline-offset:2px">×</button>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav style="position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;display:flex;gap:4px;padding:5px;border-radius:32px;background:rgba(40,44,58,.12);backdrop-filter:blur(5px) saturate(180%);-webkit-backdrop-filter:blur(5px) saturate(180%);text-shadow:0 1px 8px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.45)">
+      <button onClick="{{ goHome }}" aria-label="Accueil" style="{{ navHomeStyle }}">Accueil</button>
+      <button onClick="{{ goList }}" aria-label="Ma Watchlist" style="{{ navListStyle }}">Ma Watchlist</button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;z-index:25;background:#07080D;display:flex;flex-direction:column;animation:lg-up .42s cubic-bezier(.2,.9,.2,1) both">
+      <div style="{{ sel.ambient }}"></div>
+      <div class="lg-scroll" style="position:relative;flex:1;min-height:0;padding-bottom:130px">
+        <div style="position:relative;height:56vh;min-height:320px">
+          <div style="{{ sel.poster }}"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,8,13,.3) 0%,rgba(7,8,13,0) 30%,rgba(7,8,13,0) 55%,rgba(7,8,13,.85) 92%)"></div>
+          <button onClick="{{ back }}" aria-label="Retour aux résultats" style="position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:22px;background:rgba(30,32,42,.16);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.22);box-shadow:inset 0 1px 0 rgba(255,255,255,.32);color:#FFFFFF;font-size:19px" style-active="transform:scale(.92)" style-focus="outline:2px solid #9CC8FF;outline-offset:2px">←</button>
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:22px;right:16px;display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:16px;background:rgba(30,32,42,.16);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);border:1px solid rgba(255,255,255,.22);color:#FFFFFF;font-size:13px;font-weight:600;white-space:nowrap">
+              <span style="{{ sel.dot }}"></span>{{ sel.status }}
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="position:relative;margin:-70px 14px 0;padding:22px 20px 22px;border-radius:30px;background:rgba(255,255,255,.05);backdrop-filter:blur(32px) saturate(200%);-webkit-backdrop-filter:blur(32px) saturate(200%);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 24px 60px rgba(0,0,0,.45)">
+          <h1 style="margin:0;font-weight:700;font-size:28px;line-height:1.12;letter-spacing:-.8px;color:#FFFFFF;text-wrap:pretty">{{ sel.t }}</h1>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px">
+            <sc-for list="{{ sel.tags }}" as="tg" hint-placeholder-count="3">
+              <span style="padding:6px 11px;border-radius:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.1);font-size:13px;font-weight:500;color:rgba(245,246,250,.9)">{{ tg }}</span>
+            </sc-for>
+            <span style="display:flex;align-items:center;gap:5px;padding:6px 11px;border-radius:12px;background:rgba(255,200,90,.14);border:1px solid rgba(255,200,90,.24);font-size:13px;font-weight:700;color:#FFD27A">★ {{ sel.r }}</span>
+          </div>
+          <div style="margin-top:18px;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)">
+            <div style="font-size:13px;color:rgba(235,238,245,.62)">Réalisation</div>
+            <div style="margin-top:4px;font-size:17px;font-weight:600;letter-spacing:-.3px;color:#FFFFFF">{{ sel.dir }}</div>
+          </div>
+          <p style="margin:16px 0 0;font-size:16px;line-height:1.6;letter-spacing:-.15px;color:rgba(245,246,250,.86);text-wrap:pretty">{{ sel.s }}</p>
+
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:20px">
+              <div style="font-size:13px;color:rgba(235,238,245,.62);margin-bottom:10px">Statut</div>
+              <div style="display:flex;padding:4px;border-radius:22px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.08)">
+                <sc-for list="{{ statusPicker }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.go }}" aria-pressed="{{ s.active }}" style="{{ s.style }}">{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+
+      <div style="position:absolute;left:14px;right:14px;bottom:20px;z-index:2;display:flex;flex-direction:column;gap:6px;padding:8px;border-radius:34px;background:rgba(40,44,58,.2);backdrop-filter:blur(26px) saturate(210%);-webkit-backdrop-filter:blur(26px) saturate(210%);border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.42),0 18px 44px rgba(0,0,0,.5)">
+        <button onClick="{{ toggleAdd }}" style="{{ ctaStyle }}">{{ ctaLabel }}</button>
+        <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ removeSel }}" style="width:100%;min-height:44px;background:transparent;border:0;border-radius:22px;color:#FF8A80;font-size:15px;font-weight:500" style-hover="background:rgba(255,80,70,.1)" style-focus="outline:2px solid #FF8A80;outline-offset:-2px">Retirer de ma watchlist</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position:absolute;top:14px;left:50%;margin-left:-150px;width:300px;z-index:40;display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 18px;border-radius:26px;background:rgba(20,22,30,.16);backdrop-filter:blur(5px) saturate(180%);-webkit-backdrop-filter:blur(5px) saturate(180%);text-shadow:0 1px 8px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.18);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 14px 36px rgba(0,0,0,.5);color:#FFFFFF;font-size:14px;font-weight:600;letter-spacing:-.2px;text-align:center;animation:lg-toast 2.4s cubic-bezier(.2,.9,.2,1) both">{{ toast }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = { screen: "home", query: "", genre: "Tous", sel: null, from: "home", filter: 0, statuses: {}, recents: [], toast: "" };
+
+  componentDidMount() {
+    const seed = { dune: "À regarder", her: "En cours", chihiro: "Vu", parasite: "À regarder" };
+    const saved = window.WL ? window.WL.load("wl-glass") : null;
+    this.setState({ statuses: saved && Object.keys(saved).length ? saved : seed });
+    this.forceUpdate();
+  }
+
+  setStatus(id, status) {
+    const statuses = Object.assign({}, this.state.statuses);
+    if (status) statuses[id] = status; else delete statuses[id];
+    window.WL.save("wl-glass", statuses);
+    this.setState({ statuses: statuses });
+  }
+
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2400);
+  }
+
+  search(q) {
+    this.setState({ query: q });
+    clearTimeout(this._r);
+    if (q.trim().length > 2) {
+      this._r = setTimeout(() => {
+        const r = [q.trim()].concat(this.state.recents.filter(x => x.toLowerCase() !== q.trim().toLowerCase())).slice(0, 3);
+        this.setState({ recents: r });
+      }, 900);
+    }
+  }
+
+  poster(f) {
+    return { position: "absolute", inset: 0, background: "radial-gradient(120% 80% at 70% 10%," + f.c2 + " 0%," + f.c1 + " 75%)" };
+  }
+
+  dot(status) {
+    const c = status === "Vu" ? "#5BE0A0" : status === "En cours" ? "#FFB35C" : "#7DB6FF";
+    return { width: "7px", height: "7px", borderRadius: "4px", background: c, boxShadow: "0 0 8px " + c, flex: "none" };
+  }
+
+  segStyle(active) {
+    return {
+      flex: 1, minHeight: "40px", padding: "0 6px", borderRadius: "20px", border: 0,
+      background: active ? "rgba(255,255,255,.2)" : "transparent",
+      boxShadow: active ? "inset 0 1px 0 rgba(255,255,255,.35), 0 4px 14px rgba(0,0,0,.25)" : "none",
+      color: active ? "#FFFFFF" : "rgba(235,238,245,.66)",
+      fontSize: "14px", fontWeight: active ? 600 : 500, letterSpacing: "-.2px",
+      transition: "background .25s, color .25s"
+    };
+  }
+
+  chipStyle(active) {
+    return {
+      flex: "none", minHeight: "44px", padding: "0 17px", borderRadius: "22px", whiteSpace: "nowrap",
+      background: active ? "#FFFFFF" : "rgba(255,255,255,.05)",
+      border: active ? "1px solid #FFFFFF" : "1px solid rgba(255,255,255,.13)",
+      backdropFilter: "blur(20px) saturate(170%)", WebkitBackdropFilter: "blur(20px) saturate(170%)",
+      boxShadow: active ? "0 6px 20px rgba(255,255,255,.14)" : "inset 0 1px 0 rgba(255,255,255,.16)",
+      color: active ? "#0B0C10" : "rgba(245,246,250,.88)",
+      fontSize: "15px", fontWeight: active ? 600 : 500, letterSpacing: "-.2px",
+      transition: "background .2s, color .2s"
+    };
+  }
+
+  navStyle(active) {
+    return {
+      minHeight: "50px", padding: "0 24px", borderRadius: "26px", border: 0,
+      background: active ? "rgba(255,255,255,.2)" : "transparent",
+      boxShadow: active ? "inset 0 1px 0 rgba(255,255,255,.4), 0 4px 14px rgba(0,0,0,.25)" : "none",
+      color: active ? "#FFFFFF" : "rgba(235,238,245,.7)",
+      fontSize: "15px", fontWeight: active ? 600 : 500, letterSpacing: "-.2px", whiteSpace: "nowrap",
+      transition: "background .25s, color .25s"
+    };
+  }
+
+  renderVals() {
+    const WL = window.WL;
+    if (!WL) return { isHome: true, showNav: true, grid: [], genres: [], tabs: [], rows: [], recents: [], statusPicker: [], gridTitle: "À l'affiche", navHomeStyle: this.navStyle(true), navListStyle: this.navStyle(false) };
+    const st = this.state, S = st.statuses, q = st.query.trim();
+    const genreList = ["Tous"].concat(WL.films.map(f => f.g).filter((g, i, a) => a.indexOf(g) === i));
+    const allG = st.genre === "Tous";
+    const matches = (q ? WL.films.filter(f => WL.norm(f.t + " " + f.dir + " " + f.g).indexOf(WL.norm(q)) > -1) : WL.films).filter(f => allG || f.g === st.genre);
+    const open = id => () => this.setState({ sel: id, screen: "detail", from: st.screen });
+
+    const sel = st.sel ? WL.byId(st.sel) : null;
+    const selStatus = sel ? S[sel.id] : "";
+    const filterName = WL.statuses[st.filter];
+    const listed = WL.films.filter(f => S[f.id] === filterName);
+
+    return {
+      isHome: st.screen === "home", isList: st.screen === "list", isDetail: st.screen === "detail",
+      showNav: st.screen !== "detail",
+      query: st.query, hasQuery: st.query.length > 0,
+      onSearch: e => this.search(e.target.value),
+      clearSearch: () => this.setState({ query: "" }),
+      showRecents: !q && st.recents.length > 0,
+      recents: st.recents.map(r => ({ q: r, go: () => this.search(r) })),
+      genres: genreList.map(g => ({ label: g, active: g === st.genre, style: this.chipStyle(g === st.genre), go: () => this.setState({ genre: g }) })),
+      gridTitle: q ? "Résultats" : (allG ? "À l'affiche" : st.genre),
+      gridCount: (q || !allG) ? (matches.length + (matches.length > 1 ? " films" : " film")) : "",
+      noResults: matches.length === 0 && (!!q || !allG),
+      grid: matches.map(f => Object.assign({}, f, {
+        poster: this.poster(f), status: S[f.id] || "", hasStatus: !!S[f.id], dot: this.dot(S[f.id]),
+        sub: f.y + " · " + f.g, aria: "Ouvrir la fiche de " + f.t + ", " + f.y, open: open(f.id)
+      })),
+
+      goHome: () => this.setState({ screen: "home" }),
+      goList: () => this.setState({ screen: "list" }),
+      navHomeStyle: this.navStyle(st.screen === "home"),
+      navListStyle: this.navStyle(st.screen === "list"),
+
+      tabs: WL.statuses.map((s, i) => ({ label: s, active: i === st.filter, style: this.segStyle(i === st.filter), go: () => this.setState({ filter: i }) })),
+      listCount: listed.length + (listed.length > 1 ? " films" : " film"),
+      listEmpty: listed.length === 0,
+      hasRows: listed.length > 0,
+      emptyTitle: st.filter === 0 ? "Rien à regarder pour l'instant" : st.filter === 1 ? "Aucun film en cours" : "Aucun film vu",
+      rows: listed.map((f, i) => Object.assign({}, f, {
+        poster: this.poster(f), meta: f.y + " · " + f.d,
+        rowStyle: { display: "flex", gap: "10px", alignItems: "center", padding: "12px 12px 12px 14px", borderTop: i ? "1px solid rgba(255,255,255,.08)" : "0" },
+        aria: "Ouvrir la fiche de " + f.t, open: open(f.id),
+        cycleAria: "Passer " + f.t + " au statut suivant", removeAria: "Retirer " + f.t + " de ma watchlist",
+        cycle: () => { const n = WL.next(S[f.id]); this.setStatus(f.id, n); this.flash(f.t + " → " + n); },
+        remove: () => { this.setStatus(f.id, null); this.flash(f.t + " retiré de votre watchlist"); }
+      })),
+
+      sel: sel ? Object.assign({}, sel, {
+        poster: this.poster(sel), status: selStatus, hasStatus: !!selStatus, dot: this.dot(selStatus),
+        r: sel.r.toFixed(1), tags: [String(sel.y), sel.d, sel.g],
+        ambient: { position: "absolute", inset: 0, background: "radial-gradient(90% 60% at 50% 70%," + sel.c2 + "55 0%, rgba(7,8,13,0) 70%)", pointerEvents: "none" }
+      }) : null,
+      back: () => this.setState({ screen: st.from === "list" ? "list" : "home", sel: null }),
+      statusPicker: WL.statuses.map(s => ({ label: s, active: s === selStatus, style: this.segStyle(s === selStatus), go: () => { this.setStatus(sel.id, s); this.flash("Statut : " + s); } })),
+      ctaLabel: selStatus ? "✓  Dans ma Watchlist" : "Ajouter à ma Watchlist",
+      ctaStyle: {
+        width: "100%", minHeight: "54px", borderRadius: "27px", border: 0,
+        background: selStatus ? "rgba(255,255,255,.14)" : "#FFFFFF",
+        boxShadow: selStatus ? "inset 0 1px 0 rgba(255,255,255,.42)" : "0 8px 26px rgba(255,255,255,.18)",
+        color: selStatus ? "#FFFFFF" : "#0B0C10",
+        fontSize: "17px", fontWeight: 600, letterSpacing: "-.3px", transition: "background .25s, color .25s"
+      },
+      toggleAdd: () => {
+        if (!sel) return;
+        if (selStatus) this.setState({ screen: "list", filter: WL.statuses.indexOf(selStatus), sel: null });
+        else { this.setStatus(sel.id, "À regarder"); this.flash("Ajouté à votre watchlist"); }
+      },
+      removeSel: () => { this.setStatus(sel.id, null); this.flash(sel.t + " retiré de votre watchlist"); },
+
+      hasToast: !!st.toast, toast: st.toast
+    };
+  }
+}
+
+</script>
+</body>
+</html>
