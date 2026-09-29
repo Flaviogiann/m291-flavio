@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="./films.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#070A11;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#D9AE6A}a:hover{color:#E8C38A}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+::placeholder{color:#79828F}
+@keyframes ed-in{from{opacity:0}to{opacity:1}}
+@keyframes ed-up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes ed-toast{0%{opacity:0;transform:translateY(8px)}12%{opacity:1;transform:none}84%{opacity:1;transform:none}100%{opacity:0}}
+.ed-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.ed-scroll::-webkit-scrollbar{display:none}
+.ed-chips{display:flex;gap:18px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.ed-chips::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width:100%;max-width:430px;margin:0 auto;height:100vh;position:relative;overflow:hidden;background:#0C101A;color:#EFEBE3;font-family:Karla,system-ui,sans-serif;display:flex;flex-direction:column">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:ed-in .3s ease both">
+      <div style="padding:30px 24px 18px">
+        <div style="font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:#D9AE6A;margin-bottom:8px">Ce soir</div>
+        <h1 style="margin:0 0 20px;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:34px;line-height:1.05;letter-spacing:-.4px;color:#EFEBE3">Watchlist</h1>
+        <div style="display:flex;align-items:center;gap:12px;height:52px;border-bottom:1px solid #2A3142">
+          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="5.5" stroke="#D9AE6A" stroke-width="1.4"/><line x1="11.6" y1="11.6" x2="16" y2="16" stroke="#D9AE6A" stroke-width="1.4" stroke-linecap="round"/></svg>
+          <input type="text" value="{{ query }}" onInput="{{ onSearch }}" placeholder="Chercher un film" aria-label="Chercher un film par titre" style="flex:1;min-width:0;height:50px;background:transparent;border:0;outline:none;color:#EFEBE3;font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:300" />
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearSearch }}" aria-label="Effacer la recherche" style="width:44px;height:44px;background:transparent;border:0;color:#97A0AE;font-size:18px" style-hover="color:#EFEBE3" style-focus="outline:1px solid #D9AE6A;outline-offset:-6px">×</button>
+          </sc-if>
+        </div>
+        <div class="ed-chips" role="group" aria-label="Filtrer par genre" style="margin:8px -24px 0;padding:0 24px">
+          <sc-for list="{{ genres }}" as="g" hint-placeholder-count="4">
+            <button onClick="{{ g.go }}" aria-pressed="{{ g.active }}" style="{{ g.style }}">{{ g.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="ed-scroll" style="flex:1;min-height:0;padding:0 24px 24px">
+        <sc-if value="{{ showRecents }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 0 6px;display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <span style="font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:#79828F">Récent</span>
+            <sc-for list="{{ recents }}" as="r" hint-placeholder-count="2">
+              <button onClick="{{ r.go }}" style="min-height:44px;padding:0 4px;background:transparent;border:0;border-bottom:1px solid #2A3142;color:#EFEBE3;font-family:Newsreader,Georgia,serif;font-size:16px;font-style:italic;font-weight:300" style-hover="border-color:#D9AE6A;color:#D9AE6A" style-focus="outline:1px solid #D9AE6A;outline-offset:3px">{{ r.q }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:22px 0;padding:20px 0;border-top:1px solid #F06B5A;border-bottom:1px solid rgba(240,107,90,.3)">
+            <p style="margin:0;color:#F06B5A;font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:300;line-height:1.5;text-wrap:pretty">Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showFeature }}" hint-placeholder-val="{{ true }}">
+          <div style="padding:22px 0 26px">
+            <div style="font-size:10px;letter-spacing:2.2px;text-transform:uppercase;color:#79828F;margin-bottom:12px">Choix de la rédaction</div>
+            <button onClick="{{ feature.open }}" aria-label="{{ feature.aria }}" style="display:block;width:100%;text-align:left;padding:0;background:transparent;border:0" style-focus="outline:1px solid #D9AE6A;outline-offset:6px">
+              <div style="position:relative;aspect-ratio:3/4;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.55)">
+                <div style="{{ feature.poster }}"></div>
+                <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,16,26,0) 45%,rgba(12,16,26,.88) 100%)"></div>
+                <div style="position:absolute;left:20px;right:20px;bottom:18px">
+                  <div style="font-family:Newsreader,Georgia,serif;font-weight:400;font-size:26px;line-height:1.1;color:#FBF8F2;text-wrap:pretty">{{ feature.t }}</div>
+                  <div style="margin-top:8px;font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#D9AE6A">{{ feature.sub }}</div>
+                </div>
+              </div>
+            </button>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:6px 0 14px;border-top:1px solid #2A3142">
+          <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:22px;color:#EFEBE3;padding-top:14px">{{ gridTitle }}</h2>
+          <span style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#79828F">{{ gridCount }}</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px 18px">
+          <sc-for list="{{ grid }}" as="f" hint-placeholder-count="6">
+            <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="display:block;text-align:left;padding:0;background:transparent;border:0" style-focus="outline:1px solid #D9AE6A;outline-offset:5px">
+              <div style="position:relative;aspect-ratio:2/3;overflow:hidden;box-shadow:0 10px 24px rgba(0,0,0,.45)">
+                <div style="{{ f.poster }}"></div>
+                <sc-if value="{{ f.hasStatus }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:0;bottom:0;padding:6px 9px;background:rgba(12,16,26,.88);color:#D9AE6A;font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase">{{ f.status }}</div>
+                </sc-if>
+              </div>
+              <div style="font-family:Newsreader,Georgia,serif;font-weight:400;font-size:17px;line-height:1.2;color:#EFEBE3;margin-top:11px;text-wrap:pretty">{{ f.t }}</div>
+              <div style="font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:#97A0AE;margin-top:6px">{{ f.y }}</div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:ed-in .3s ease both">
+      <div style="padding:30px 24px 0">
+        <div style="font-size:10px;letter-spacing:2.6px;text-transform:uppercase;color:#D9AE6A;margin-bottom:8px">Ma collection</div>
+        <h1 style="margin:0 0 18px;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:32px;line-height:1.05;color:#EFEBE3">Ma Watchlist</h1>
+        <div role="tablist" style="display:flex;gap:22px;border-bottom:1px solid #2A3142">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="ed-scroll" style="flex:1;min-height:0;padding:16px 24px 24px">
+        <div style="font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:#79828F;padding-bottom:14px">{{ listCount }}</div>
+
+        <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:30px 0 10px;max-width:300px">
+            <p style="margin:0 0 10px;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:26px;line-height:1.2;color:#EFEBE3">{{ emptyTitle }}</p>
+            <p style="margin:0 0 24px;font-size:14px;line-height:1.7;color:#97A0AE">Cherchez un titre et ajoutez-le pour le retrouver ici.</p>
+            <button onClick="{{ goHome }}" style="min-height:52px;padding:0 26px;background:#D9AE6A;border:0;color:#171200;font-family:Karla,sans-serif;font-size:13px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase" style-hover="background:#E8C38A" style-focus="outline:1px solid #E8C38A;outline-offset:4px">Chercher un film</button>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ rows }}" as="f" hint-placeholder-count="0">
+            <div style="display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #1D2430">
+              <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="flex:1;min-width:0;display:flex;gap:16px;align-items:center;padding:0;background:transparent;border:0;text-align:left" style-focus="outline:1px solid #D9AE6A;outline-offset:4px">
+                <div style="position:relative;width:56px;flex:none;aspect-ratio:2/3;overflow:hidden">
+                  <div style="{{ f.poster }}"></div>
+                </div>
+                <div style="min-width:0">
+                  <div style="font-family:Newsreader,Georgia,serif;font-weight:400;font-size:18px;line-height:1.2;color:#EFEBE3">{{ f.t }}</div>
+                  <div style="font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:#97A0AE;margin-top:7px">{{ f.meta }}</div>
+                </div>
+              </button>
+              <button onClick="{{ f.cycle }}" aria-label="{{ f.cycleAria }}" style="width:44px;height:44px;flex:none;background:transparent;border:1px solid #2A3142;border-radius:50%;color:#D9AE6A;font-size:15px" style-hover="border-color:#D9AE6A" style-focus="outline:1px solid #D9AE6A;outline-offset:3px">→</button>
+              <button onClick="{{ f.remove }}" aria-label="{{ f.removeAria }}" style="width:44px;height:44px;flex:none;background:transparent;border:1px solid #2A3142;border-radius:50%;color:#F06B5A;font-size:15px" style-hover="border-color:#F06B5A" style-focus="outline:1px solid #F06B5A;outline-offset:3px">×</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav style="flex:none;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #1D2430;background:#0C101A">
+      <button onClick="{{ goHome }}" aria-label="Accueil" style="{{ navHomeStyle }}">Accueil</button>
+      <button onClick="{{ goList }}" aria-label="Ma Watchlist" style="{{ navListStyle }}">Ma Watchlist</button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#0C101A;display:flex;flex-direction:column;animation:ed-up .32s cubic-bezier(.2,.8,.2,1) both">
+      <div class="ed-scroll" style="flex:1;min-height:0">
+        <div style="position:relative;height:44vh;min-height:270px">
+          <div style="{{ sel.poster }}"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,16,26,.35) 0%,rgba(12,16,26,0) 40%,rgba(12,16,26,.96) 96%)"></div>
+          <button onClick="{{ back }}" aria-label="Retour aux résultats" style="position:absolute;top:16px;left:16px;width:44px;height:44px;border-radius:50%;background:rgba(12,16,26,.66);border:1px solid rgba(239,235,227,.2);color:#EFEBE3;font-size:17px" style-hover="background:rgba(12,16,26,.9)" style-focus="outline:1px solid #D9AE6A;outline-offset:3px">←</button>
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:26px;right:20px;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#D9AE6A;border-bottom:1px solid #D9AE6A;padding-bottom:4px">{{ sel.status }}</div>
+          </sc-if>
+        </div>
+
+        <div style="padding:2px 24px 0">
+          <h1 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:33px;line-height:1.08;letter-spacing:-.4px;color:#FBF8F2;text-wrap:pretty">{{ sel.t }}</h1>
+          <div style="margin-top:14px;display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#97A0AE">
+            <span>{{ sel.y }}</span><span style="width:14px;height:1px;background:#3A4354"></span><span>{{ sel.d }}</span><span style="width:14px;height:1px;background:#3A4354"></span><span>{{ sel.g }}</span>
+          </div>
+          <div style="margin-top:20px;padding:16px 0;border-top:1px solid #1D2430;border-bottom:1px solid #1D2430;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#79828F">Réalisation</div>
+              <div style="margin-top:6px;font-family:Newsreader,Georgia,serif;font-size:19px;font-weight:400;color:#EFEBE3">{{ sel.dir }}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#79828F">Note</div>
+              <div style="margin-top:6px;font-family:Newsreader,Georgia,serif;font-size:19px;color:#D9AE6A">{{ sel.rating }}</div>
+            </div>
+          </div>
+          <p style="margin:20px 0 0;font-family:Newsreader,Georgia,serif;font-weight:300;font-size:18px;line-height:1.65;color:#D8D3CA;text-wrap:pretty">{{ sel.s }}</p>
+
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:24px 0 0">
+              <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#79828F;margin-bottom:10px">Statut</div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <sc-for list="{{ statusPicker }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.go }}" aria-pressed="{{ s.active }}" style="{{ s.style }}">{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="height:26px"></div>
+        </div>
+      </div>
+
+      <div style="flex:none;padding:14px 24px 20px;border-top:1px solid #1D2430;background:#0C101A">
+        <button onClick="{{ toggleAdd }}" style="{{ ctaStyle }}">{{ ctaLabel }}</button>
+        <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ removeSel }}" style="width:100%;min-height:44px;margin-top:6px;background:transparent;border:0;color:#F06B5A;font-size:11px;letter-spacing:1.6px;text-transform:uppercase" style-hover="color:#FF8878" style-focus="outline:1px solid #F06B5A;outline-offset:-4px">Retirer de ma watchlist</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="{{ toastStyle }}">{{ toast }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = { screen: "home", query: "", genre: "Tous", sel: null, from: "home", filter: 0, statuses: {}, recents: [], toast: "" };
+
+  genreStyle(active) {
+    return {
+      flex: "none", minHeight: "46px", padding: "0 2px", background: "transparent", border: 0,
+      borderBottom: active ? "1px solid #D9AE6A" : "1px solid transparent",
+      color: active ? "#D9AE6A" : "#79828F", whiteSpace: "nowrap",
+      fontFamily: "Newsreader,Georgia,serif", fontSize: "16px", fontWeight: 400,
+      fontStyle: active ? "italic" : "normal"
+    };
+  }
+
+  componentDidMount() {
+    const seed = { portrait: "À regarder", her: "En cours", lit: "Vu", parasite: "À regarder" };
+    const saved = window.WL ? window.WL.load("wl-edito") : null;
+    this.setState({ statuses: saved && Object.keys(saved).length ? saved : seed });
+    this.forceUpdate();
+  }
+
+  setStatus(id, status) {
+    const statuses = Object.assign({}, this.state.statuses);
+    if (status) statuses[id] = status; else delete statuses[id];
+    window.WL.save("wl-edito", statuses);
+    this.setState({ statuses: statuses });
+  }
+
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2300);
+  }
+
+  search(q) {
+    this.setState({ query: q });
+    clearTimeout(this._r);
+    if (q.trim().length > 2) {
+      this._r = setTimeout(() => {
+        const r = [q.trim()].concat(this.state.recents.filter(x => x.toLowerCase() !== q.trim().toLowerCase())).slice(0, 3);
+        this.setState({ recents: r });
+      }, 900);
+    }
+  }
+
+  poster(f, tall) {
+    return {
+      position: "absolute", inset: 0,
+      background: "radial-gradient(120% 90% at 30% 15%," + f.c2 + " 0%," + f.c1 + " 72%)",
+      filter: tall ? "saturate(1.05)" : "none"
+    };
+  }
+
+  tabStyle(active) {
+    return {
+      minHeight: "46px", padding: "0 2px", background: "transparent", border: 0,
+      borderBottom: active ? "2px solid #D9AE6A" : "2px solid transparent",
+      color: active ? "#EFEBE3" : "#79828F",
+      fontFamily: "Newsreader,Georgia,serif", fontSize: "17px", fontWeight: 400, marginBottom: "-1px"
+    };
+  }
+
+  pillStyle(active) {
+    return {
+      minHeight: "44px", padding: "0 18px", borderRadius: "22px",
+      background: active ? "#D9AE6A" : "transparent",
+      border: active ? "1px solid #D9AE6A" : "1px solid #2A3142",
+      color: active ? "#171200" : "#97A0AE",
+      fontSize: "12px", fontWeight: 600, letterSpacing: "1.1px", textTransform: "uppercase"
+    };
+  }
+
+  navStyle(active) {
+    return {
+      minHeight: "58px", background: "transparent", border: 0,
+      color: active ? "#D9AE6A" : "#79828F",
+      fontFamily: "Newsreader,Georgia,serif", fontSize: "17px", fontWeight: 400,
+      fontStyle: active ? "italic" : "normal"
+    };
+  }
+
+  renderVals() {
+    const WL = window.WL;
+    if (!WL) return { isHome: true, showNav: true, grid: [], tabs: [], rows: [], recents: [], statusPicker: [], gridTitle: "À l'affiche", navHomeStyle: this.navStyle(true), navListStyle: this.navStyle(false) };
+    const st = this.state, S = st.statuses, q = st.query.trim();
+    const genreList = ["Tous"].concat(WL.films.map(f => f.g).filter((g, i, a) => a.indexOf(g) === i));
+    const allGenres = st.genre === "Tous";
+    const matches = (q ? WL.films.filter(f => WL.norm(f.t + " " + f.dir + " " + f.g).indexOf(WL.norm(q)) > -1) : WL.films).filter(f => allGenres || f.g === st.genre);
+    const open = id => () => this.setState({ sel: id, screen: "detail", from: st.screen });
+    const deco = f => Object.assign({}, f, {
+      poster: this.poster(f), status: S[f.id] || "", hasStatus: !!S[f.id],
+      aria: "Ouvrir la fiche de " + f.t + ", " + f.y, open: open(f.id),
+      sub: f.dir + " · " + f.d
+    });
+
+    const feature = deco(WL.films[2]);
+    const showFeature = !q && allGenres;
+    const grid = (showFeature ? matches.filter(f => f.id !== WL.films[2].id) : matches).map(deco);
+
+    const sel = st.sel ? WL.byId(st.sel) : null;
+    const selStatus = sel ? S[sel.id] : "";
+    const filterName = WL.statuses[st.filter];
+    const listed = WL.films.filter(f => S[f.id] === filterName);
+
+    return {
+      isHome: st.screen === "home", isList: st.screen === "list", isDetail: st.screen === "detail",
+      showNav: st.screen !== "detail",
+      query: st.query, hasQuery: st.query.length > 0,
+      onSearch: e => this.search(e.target.value),
+      clearSearch: () => this.setState({ query: "" }),
+      showRecents: !q && st.recents.length > 0,
+      recents: st.recents.map(r => ({ q: r, go: () => this.search(r) })),
+      showFeature: showFeature,
+      feature: feature,
+      genres: genreList.map(g => ({ label: g, active: g === st.genre, style: this.genreStyle(g === st.genre), go: () => this.setState({ genre: g }) })),
+      gridTitle: q ? "Résultats" : (allGenres ? "À l'affiche" : st.genre),
+      gridCount: (q || !allGenres) ? (matches.length + (matches.length > 1 ? " films" : " film")) : "Sélection",
+      noResults: matches.length === 0 && (!!q || !allGenres),
+      grid: grid,
+
+      goHome: () => this.setState({ screen: "home" }),
+      goList: () => this.setState({ screen: "list" }),
+      navHomeStyle: this.navStyle(st.screen === "home"),
+      navListStyle: this.navStyle(st.screen === "list"),
+
+      tabs: WL.statuses.map((s, i) => ({ label: s, active: i === st.filter, style: this.tabStyle(i === st.filter), go: () => this.setState({ filter: i }) })),
+      listCount: listed.length + (listed.length > 1 ? " films" : " film"),
+      listEmpty: listed.length === 0,
+      emptyTitle: st.filter === 0 ? "Rien à regarder pour l'instant" : st.filter === 1 ? "Aucun film en cours" : "Aucun film vu",
+      rows: listed.map(f => Object.assign({}, deco(f), {
+        meta: f.y + " · " + f.d,
+        cycleAria: "Passer " + f.t + " au statut suivant",
+        removeAria: "Retirer " + f.t + " de ma watchlist",
+        cycle: () => { const n = WL.next(S[f.id]); this.setStatus(f.id, n); this.flash(f.t + " → " + n); },
+        remove: () => { this.setStatus(f.id, null); this.flash(f.t + " retiré de votre watchlist"); }
+      })),
+
+      sel: sel ? Object.assign({}, sel, { poster: this.poster(sel, true), status: selStatus, hasStatus: !!selStatus, rating: sel.r.toFixed(1) }) : null,
+      back: () => this.setState({ screen: st.from === "list" ? "list" : "home", sel: null }),
+      statusPicker: WL.statuses.map(s => ({ label: s, active: s === selStatus, style: this.pillStyle(s === selStatus), go: () => { this.setStatus(sel.id, s); this.flash("Statut : " + s); } })),
+      ctaLabel: selStatus ? "Dans ma Watchlist" : "Ajouter à ma Watchlist",
+      ctaStyle: {
+        width: "100%", minHeight: "54px", borderRadius: "27px",
+        background: selStatus ? "transparent" : "#D9AE6A",
+        border: selStatus ? "1px solid #D9AE6A" : "0",
+        color: selStatus ? "#D9AE6A" : "#171200",
+        fontSize: "13px", fontWeight: 600, letterSpacing: "1.6px", textTransform: "uppercase"
+      },
+      toggleAdd: () => {
+        if (!sel) return;
+        if (selStatus) this.setState({ screen: "list", filter: WL.statuses.indexOf(selStatus), sel: null });
+        else { this.setStatus(sel.id, "À regarder"); this.flash("Ajouté à votre watchlist"); }
+      },
+      removeSel: () => { this.setStatus(sel.id, null); this.flash(sel.t + " retiré de votre watchlist"); },
+
+      hasToast: !!st.toast, toast: st.toast,
+      toastStyle: {
+        position: "absolute", left: "24px", right: "24px", bottom: st.screen === "detail" ? "96px" : "78px",
+        padding: "15px 18px", background: "#141A26", border: "1px solid #2A3142",
+        color: "#EFEBE3", fontFamily: "Newsreader,Georgia,serif", fontSize: "16px",
+        boxShadow: "0 14px 34px rgba(0,0,0,.5)", animation: "ed-toast 2.3s ease both", zIndex: 30
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="./films.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#05070E;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#E8B04B}a:hover{color:#F3C670}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+::placeholder{color:#7C889E}
+@keyframes wl-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes wl-up{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes wl-toast{0%{opacity:0;transform:translateY(12px)}12%{opacity:1;transform:none}82%{opacity:1;transform:none}100%{opacity:0;transform:translateY(8px)}}
+.wl-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.wl-scroll::-webkit-scrollbar{display:none}
+.wl-chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.wl-chips::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width:100%;max-width:430px;margin:0 auto;height:100vh;position:relative;overflow:hidden;background:#0B0F1A;color:#F4F1EA;font-family:'Work Sans',system-ui,sans-serif;display:flex;flex-direction:column">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:wl-in .3s ease both">
+      <div style="padding:26px 20px 14px;background:linear-gradient(180deg,#0F1526 0%,#0B0F1A 100%)">
+        <h1 style="margin:0 0 16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;font-style:italic;font-size:30px;letter-spacing:.2px;color:#F4F1EA">Watchlist</h1>
+        <div style="display:flex;align-items:center;gap:10px;height:50px;padding:0 14px;background:#182031;border:1px solid #232D42;border-radius:25px">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true"><circle cx="7.5" cy="7.5" r="5.5" stroke="#98A2B6" stroke-width="1.6"/><line x1="11.6" y1="11.6" x2="16" y2="16" stroke="#98A2B6" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <input type="text" value="{{ query }}" onInput="{{ onSearch }}" placeholder="Chercher un film" aria-label="Chercher un film par titre" style="flex:1;min-width:0;height:48px;background:transparent;border:0;outline:none;color:#F4F1EA;font-size:16px;letter-spacing:.1px" />
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearSearch }}" aria-label="Effacer la recherche" style="width:44px;height:44px;margin-right:-10px;background:transparent;border:0;color:#98A2B6;font-size:19px;line-height:1;border-radius:22px" style-hover="color:#F4F1EA" style-focus="outline:2px solid #E8B04B;outline-offset:-4px">×</button>
+          </sc-if>
+        </div>
+        <div class="wl-chips" role="group" aria-label="Filtrer par genre" style="margin:14px -20px 0;padding:0 20px 2px">
+          <sc-for list="{{ genres }}" as="g" hint-placeholder-count="4">
+            <button onClick="{{ g.go }}" aria-pressed="{{ g.active }}" style="{{ g.style }}">{{ g.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="wl-scroll" style="flex:1;min-height:0;padding:4px 20px 22px">
+        <sc-if value="{{ showRecents }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:10px 0 4px">
+            <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7C889E;margin-bottom:10px">Recherches récentes</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <sc-for list="{{ recents }}" as="r" hint-placeholder-count="2">
+                <button onClick="{{ r.go }}" style="min-height:44px;padding:0 16px;background:#182031;border:1px solid #232D42;border-radius:22px;color:#D6DBE6;font-size:14px" style-hover="border-color:#E8B04B;color:#F4F1EA" style-focus="outline:2px solid #E8B04B;outline-offset:2px">{{ r.q }}</button>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:16px 0 12px">
+          <h2 style="margin:0;font-family:'Playfair Display',Georgia,serif;font-weight:500;font-size:19px;color:#F4F1EA">{{ gridTitle }}</h2>
+          <span style="font-size:13px;color:#7C889E">{{ gridCount }}</span>
+        </div>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:18px 0;padding:22px 20px;border:1px solid #4A2A2C;background:#1B1215;border-radius:14px">
+            <p style="margin:0;color:#FF6B5B;font-size:15px;line-height:1.55">Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.</p>
+          </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px 14px">
+          <sc-for list="{{ grid }}" as="f" hint-placeholder-count="6">
+            <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="display:block;text-align:left;padding:0;background:transparent;border:0;border-radius:10px" style-focus="outline:2px solid #E8B04B;outline-offset:4px">
+              <div style="position:relative;aspect-ratio:2/3;border-radius:8px;overflow:hidden;box-shadow:0 10px 26px rgba(0,0,0,.5)">
+                <div style="{{ f.poster }}"></div>
+                <div style="position:absolute;inset:8px;border:1px solid rgba(244,241,234,.16)"></div>
+                <div style="position:absolute;left:14px;right:14px;bottom:16px;font-family:'Playfair Display',Georgia,serif;font-size:14px;line-height:1.25;color:rgba(244,241,234,.92);text-shadow:0 2px 10px rgba(0,0,0,.6)">{{ f.t }}</div>
+                <sc-if value="{{ f.hasStatus }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:8px;right:8px;padding:4px 8px;border-radius:4px;background:rgba(11,15,26,.82);color:#E8B04B;font-size:10px;letter-spacing:.6px;text-transform:uppercase">{{ f.status }}</div>
+                </sc-if>
+              </div>
+              <div style="padding:9px 2px 0">
+                <div style="font-size:14px;font-weight:500;color:#F4F1EA;line-height:1.3">{{ f.t }}</div>
+                <div style="font-size:13px;color:#98A2B6;margin-top:3px">{{ f.y }}</div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:wl-in .3s ease both">
+      <div style="padding:26px 20px 12px;background:linear-gradient(180deg,#0F1526 0%,#0B0F1A 100%)">
+        <h1 style="margin:0 0 16px;font-family:'Playfair Display',Georgia,serif;font-weight:500;font-style:italic;font-size:30px;color:#F4F1EA">Ma Watchlist</h1>
+        <div role="tablist" style="display:flex;gap:8px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="wl-scroll" style="flex:1;min-height:0;padding:16px 20px 22px">
+        <div style="font-size:13px;color:#7C889E;padding-bottom:12px">{{ listCount }}</div>
+
+        <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:34px 4px 10px;text-align:center">
+            <p style="margin:0 0 6px;font-family:'Playfair Display',Georgia,serif;font-size:20px;color:#F4F1EA">{{ emptyTitle }}</p>
+            <p style="margin:0 0 22px;font-size:14px;line-height:1.6;color:#98A2B6">Cherchez un titre et ajoutez-le pour le retrouver ici.</p>
+            <button onClick="{{ goHome }}" style="min-height:50px;padding:0 26px;background:#E8B04B;border:0;border-radius:25px;color:#151007;font-size:16px;font-weight:600" style-hover="background:#F3C670" style-focus="outline:2px solid #F3C670;outline-offset:3px">Chercher un film</button>
+          </div>
+        </sc-if>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <sc-for list="{{ rows }}" as="f" hint-placeholder-count="0">
+            <div style="display:flex;gap:14px;align-items:center">
+              <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="flex:1;min-width:0;display:flex;gap:14px;align-items:center;padding:0;background:transparent;border:0;text-align:left" style-focus="outline:2px solid #E8B04B;outline-offset:4px">
+                <div style="position:relative;width:58px;flex:none;aspect-ratio:2/3;border-radius:5px;overflow:hidden">
+                  <div style="{{ f.poster }}"></div>
+                </div>
+                <div style="min-width:0">
+                  <div style="font-size:15px;font-weight:500;color:#F4F1EA;line-height:1.3">{{ f.t }}</div>
+                  <div style="font-size:13px;color:#98A2B6;margin-top:4px">{{ f.meta }}</div>
+                  <div style="margin-top:8px;display:inline-block;padding:4px 9px;border-radius:4px;background:rgba(232,176,75,.14);color:#E8B04B;font-size:11px;letter-spacing:.7px;text-transform:uppercase">{{ f.status }}</div>
+                </div>
+              </button>
+              <button onClick="{{ f.cycle }}" aria-label="{{ f.cycleAria }}" style="width:44px;height:44px;flex:none;background:#182031;border:1px solid #232D42;border-radius:22px;color:#E8B04B;font-size:17px;line-height:1" style-hover="border-color:#E8B04B" style-focus="outline:2px solid #E8B04B;outline-offset:2px">→</button>
+              <button onClick="{{ f.remove }}" aria-label="{{ f.removeAria }}" style="width:44px;height:44px;flex:none;background:transparent;border:1px solid #2A2023;border-radius:22px;color:#FF6B5B;font-size:17px;line-height:1" style-hover="border-color:#FF6B5B;background:rgba(255,107,91,.1)" style-focus="outline:2px solid #FF6B5B;outline-offset:2px">×</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav style="flex:none;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #1C2434;background:rgba(11,15,26,.96);backdrop-filter:blur(8px)">
+      <button onClick="{{ goHome }}" aria-label="Accueil" style="{{ navHomeStyle }}">Accueil</button>
+      <button onClick="{{ goList }}" aria-label="Ma Watchlist" style="{{ navListStyle }}">Ma Watchlist</button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#0B0F1A;display:flex;flex-direction:column;animation:wl-up .32s cubic-bezier(.2,.8,.2,1) both">
+      <div class="wl-scroll" style="flex:1;min-height:0">
+        <div style="position:relative;height:52vh;min-height:300px">
+          <div style="{{ sel.poster }}"></div>
+          <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,15,26,.45) 0%,rgba(11,15,26,0) 34%,rgba(11,15,26,.92) 88%,#0B0F1A 100%)"></div>
+          <button onClick="{{ back }}" aria-label="Retour aux résultats" style="position:absolute;top:14px;left:14px;width:44px;height:44px;border-radius:22px;background:rgba(11,15,26,.7);border:1px solid rgba(244,241,234,.16);color:#F4F1EA;font-size:19px;line-height:1" style-hover="background:rgba(11,15,26,.9)" style-focus="outline:2px solid #E8B04B;outline-offset:2px">←</button>
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;top:22px;right:16px;padding:7px 12px;border-radius:5px;background:rgba(232,176,75,.16);border:1px solid rgba(232,176,75,.4);color:#E8B04B;font-size:11px;letter-spacing:.9px;text-transform:uppercase">{{ sel.status }}</div>
+          </sc-if>
+          <div style="position:absolute;left:20px;right:20px;bottom:10px">
+            <h1 style="margin:0;font-family:'Playfair Display',Georgia,serif;font-weight:600;font-size:29px;line-height:1.15;color:#F4F1EA;text-wrap:pretty">{{ sel.t }}</h1>
+          </div>
+        </div>
+
+        <div style="padding:6px 20px 0">
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#98A2B6">
+            <span>{{ sel.y }}</span><span style="opacity:.4">·</span><span>{{ sel.d }}</span><span style="opacity:.4">·</span><span>{{ sel.g }}</span>
+            <span style="margin-left:auto;display:flex;align-items:center;gap:5px;color:#E8B04B;font-weight:600"><span style="font-size:13px">★</span>{{ sel.r }}</span>
+          </div>
+          <div style="margin:18px 0 0;padding-top:18px;border-top:1px solid #1C2434">
+            <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7C889E">Réalisation</div>
+            <div style="margin-top:6px;font-family:'Playfair Display',Georgia,serif;font-size:18px;color:#F4F1EA">{{ sel.dir }}</div>
+          </div>
+          <p style="margin:18px 0 0;font-size:15px;line-height:1.7;color:#D6DBE6;text-wrap:pretty">{{ sel.s }}</p>
+
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:24px 0 0">
+              <div style="font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:#7C889E;margin-bottom:10px">Statut</div>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ statusPicker }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.go }}" aria-pressed="{{ s.active }}" style="{{ s.style }}">{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="height:26px"></div>
+        </div>
+      </div>
+
+      <div style="flex:none;padding:12px 20px 18px;border-top:1px solid #1C2434;background:rgba(11,15,26,.97)">
+        <button onClick="{{ toggleAdd }}" style="{{ ctaStyle }}">{{ ctaLabel }}</button>
+        <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ removeSel }}" style="width:100%;min-height:44px;margin-top:8px;background:transparent;border:0;color:#FF6B5B;font-size:14px" style-hover="color:#FF8878" style-focus="outline:2px solid #FF6B5B;outline-offset:2px;border-radius:10px">Retirer de ma watchlist</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="{{ toastStyle }}">{{ toast }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = { screen: "home", query: "", genre: "Tous", sel: null, filter: 0, statuses: {}, recents: [], toast: "" };
+
+  genreStyle(active) {
+    return {
+      flex: "none", minHeight: "44px", padding: "0 16px", borderRadius: "22px", fontSize: "14px",
+      fontWeight: active ? 600 : 400, whiteSpace: "nowrap",
+      background: active ? "rgba(232,176,75,.16)" : "transparent",
+      border: active ? "1px solid #E8B04B" : "1px solid #232D42",
+      color: active ? "#E8B04B" : "#98A2B6"
+    };
+  }
+
+  componentDidMount() {
+    const seed = { whiplash: "À regarder", drive: "En cours", chihiro: "Vu", arrival: "À regarder" };
+    const saved = window.WL ? window.WL.load("wl-classic") : null;
+    this.setState({ statuses: saved && Object.keys(saved).length ? saved : seed });
+    this.forceUpdate();
+  }
+
+  persist(statuses) { window.WL.save("wl-classic", statuses); }
+
+  setStatus(id, status) {
+    const statuses = Object.assign({}, this.state.statuses);
+    if (status) statuses[id] = status; else delete statuses[id];
+    this.persist(statuses);
+    this.setState({ statuses: statuses });
+  }
+
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2300);
+  }
+
+  search(q) {
+    this.setState({ query: q });
+    clearTimeout(this._r);
+    if (q.trim().length > 2) {
+      this._r = setTimeout(() => {
+        const r = [q.trim()].concat(this.state.recents.filter(x => x.toLowerCase() !== q.trim().toLowerCase())).slice(0, 3);
+        this.setState({ recents: r });
+      }, 900);
+    }
+  }
+
+  poster(f, deep) {
+    return {
+      position: "absolute", inset: 0,
+      background: "linear-gradient(155deg," + f.c1 + " 0%," + f.c2 + " 82%)",
+      boxShadow: deep ? "inset 0 -80px 120px rgba(11,15,26,.7)" : "none"
+    };
+  }
+
+  tabStyle(active) {
+    return {
+      flex: 1, minHeight: "44px", padding: "0 6px", borderRadius: "22px", fontSize: "14px",
+      fontWeight: active ? 600 : 400, letterSpacing: ".1px",
+      background: active ? "#E8B04B" : "#182031",
+      border: active ? "1px solid #E8B04B" : "1px solid #232D42",
+      color: active ? "#151007" : "#98A2B6"
+    };
+  }
+
+  navStyle(active) {
+    return {
+      minHeight: "58px", background: "transparent", border: 0, fontSize: "14px",
+      fontWeight: active ? 600 : 400, letterSpacing: ".2px",
+      color: active ? "#E8B04B" : "#7C889E",
+      boxShadow: active ? "inset 0 2px 0 #E8B04B" : "none"
+    };
+  }
+
+  renderVals() {
+    const WL = window.WL;
+    if (!WL) return { isHome: true, showNav: true, grid: [], tabs: [], rows: [], recents: [], statusPicker: [], gridTitle: "Sélection du moment", gridCount: "", navHomeStyle: this.navStyle(true), navListStyle: this.navStyle(false) };
+    const st = this.state, S = st.statuses;
+    const q = st.query.trim();
+    const genreList = ["Tous"].concat(WL.films.map(f => f.g).filter((g, i, a) => a.indexOf(g) === i));
+    const inGenre = f => st.genre === "Tous" || f.g === st.genre;
+    const matches = (q ? WL.films.filter(f => WL.norm(f.t + " " + f.dir + " " + f.g).indexOf(WL.norm(q)) > -1) : WL.films).filter(inGenre);
+    const open = id => () => this.setState({ sel: id, screen: "detail", from: st.screen });
+
+    const grid = matches.map(f => Object.assign({}, f, {
+      poster: this.poster(f), status: S[f.id] || "", hasStatus: !!S[f.id],
+      aria: "Ouvrir la fiche de " + f.t + ", " + f.y, open: open(f.id)
+    }));
+
+    const sel = st.sel ? WL.byId(st.sel) : null;
+    const selStatus = sel ? S[sel.id] : "";
+    const filterName = WL.statuses[st.filter];
+    const listed = WL.films.filter(f => S[f.id] === filterName);
+
+    const rows = listed.map(f => Object.assign({}, f, {
+      poster: this.poster(f), status: S[f.id], meta: f.y + " · " + f.d,
+      aria: "Ouvrir la fiche de " + f.t, open: open(f.id),
+      cycleAria: "Passer " + f.t + " au statut suivant",
+      removeAria: "Retirer " + f.t + " de ma watchlist",
+      cycle: () => { const n = WL.next(S[f.id]); this.setStatus(f.id, n); this.flash(f.t + " → " + n); },
+      remove: () => { this.setStatus(f.id, null); this.flash(f.t + " retiré de votre watchlist"); }
+    }));
+
+    return {
+      isHome: st.screen === "home", isList: st.screen === "list", isDetail: st.screen === "detail",
+      showNav: st.screen !== "detail",
+      query: st.query, hasQuery: st.query.length > 0,
+      onSearch: e => this.search(e.target.value),
+      clearSearch: () => this.setState({ query: "" }),
+      showRecents: !q && st.recents.length > 0,
+      recents: st.recents.map(r => ({ q: r, go: () => this.search(r) })),
+      genres: genreList.map(g => ({
+        label: g, active: g === st.genre, style: this.genreStyle(g === st.genre),
+        go: () => this.setState({ genre: g })
+      })),
+      gridTitle: q ? "Résultats" : (st.genre === "Tous" ? "Sélection du moment" : st.genre),
+      gridCount: (q || st.genre !== "Tous") ? (matches.length + (matches.length > 1 ? " films" : " film")) : "",
+      noResults: matches.length === 0 && (!!q || st.genre !== "Tous"),
+      grid: grid,
+
+      goHome: () => this.setState({ screen: "home" }),
+      goList: () => this.setState({ screen: "list" }),
+      navHomeStyle: this.navStyle(st.screen === "home"),
+      navListStyle: this.navStyle(st.screen === "list"),
+
+      tabs: WL.statuses.map((s, i) => ({
+        label: s, active: i === st.filter, style: this.tabStyle(i === st.filter),
+        go: () => this.setState({ filter: i })
+      })),
+      listCount: listed.length + (listed.length > 1 ? " films" : " film"),
+      listEmpty: listed.length === 0,
+      emptyTitle: st.filter === 0 ? "Rien à regarder pour l'instant" : st.filter === 1 ? "Aucun film en cours" : "Aucun film vu",
+      rows: rows,
+
+      sel: sel ? Object.assign({}, sel, { poster: this.poster(sel, true), status: selStatus, hasStatus: !!selStatus }) : null,
+      back: () => this.setState({ screen: st.from === "list" ? "list" : "home", sel: null }),
+      statusPicker: WL.statuses.map(s => ({
+        label: s, active: s === selStatus, style: this.tabStyle(s === selStatus),
+        go: () => { this.setStatus(sel.id, s); this.flash("Statut : " + s); }
+      })),
+      ctaLabel: selStatus ? "Dans ma Watchlist" : "Ajouter à ma Watchlist",
+      ctaStyle: {
+        width: "100%", minHeight: "54px", borderRadius: "27px", fontSize: "16px", fontWeight: 600,
+        background: selStatus ? "transparent" : "#E8B04B",
+        border: selStatus ? "1px solid #E8B04B" : "0",
+        color: selStatus ? "#E8B04B" : "#151007"
+      },
+      toggleAdd: () => {
+        if (!sel) return;
+        if (selStatus) { this.setState({ screen: "list", filter: WL.statuses.indexOf(selStatus), sel: null }); }
+        else { this.setStatus(sel.id, "À regarder"); this.flash("Ajouté à votre watchlist"); }
+      },
+      removeSel: () => { this.setStatus(sel.id, null); this.flash(sel.t + " retiré de votre watchlist"); },
+
+      hasToast: !!st.toast, toast: st.toast,
+      toastStyle: {
+        position: "absolute", left: "20px", right: "20px", bottom: st.screen === "detail" ? "94px" : "74px",
+        padding: "14px 18px", borderRadius: "12px", background: "#182031",
+        border: "1px solid #2C3850", color: "#F4F1EA", fontSize: "14px",
+        boxShadow: "0 12px 30px rgba(0,0,0,.5)", animation: "wl-toast 2.3s ease both", zIndex: 30
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>

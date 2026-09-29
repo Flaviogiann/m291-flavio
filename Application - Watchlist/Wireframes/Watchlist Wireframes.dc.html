@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics><meta name="design_doc_mode" content="canvas"><link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet"><style>body{margin:0;background:#f0eee9;font-family:'Kalam',system-ui,sans-serif;color:#1a1a1a}a{color:#1a1a1a}a:hover{color:#2a78d6}
+.dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 8px}.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}.dv-tname{font:700 20px/1.2 'Kalam',sans-serif;color:#1a1a1a}.dv-opts{display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}.dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px;width:264px}.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}.dv-olabel{display:flex;align-items:baseline;gap:8px;font:700 15px/1.3 'Kalam',sans-serif;color:#1a1a1a}.dv-opt:target .dv-oid{background:#2a78d6;color:#fff}.dv-next{margin:26px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+.grp{flex-basis:100%;display:flex;align-items:baseline;gap:12px;margin:18px 0 -6px;padding-top:14px;border-top:1.5px dashed rgba(0,0,0,.18);font:700 17px 'Kalam',sans-serif}.grp small{font:400 13px 'Kalam',sans-serif;color:rgba(0,0,0,.55)}
+.ph{width:260px;height:540px;border:2px solid #1a1a1a;border-radius:28px;background:#fdfcf8;position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:3px 4px 0 rgba(0,0,0,.12)}
+.bd{flex:1;min-height:0;overflow:hidden;padding:18px 14px 10px;display:flex;flex-direction:column;gap:10px}
+.h1{font:700 21px/1.1 'Kalam',sans-serif}.h2{font:700 14px 'Kalam',sans-serif;display:flex;justify-content:space-between}.h2 span{font-weight:400;color:#777}
+.sr{height:34px;border:1.5px solid #1a1a1a;border-radius:17px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:13px;color:#888;flex:none}.sr b{width:10px;height:10px;border:1.5px solid #1a1a1a;border-radius:50%;flex:none}
+.sr.on{border-color:#E8B04B;box-shadow:0 0 0 2px rgba(232,176,75,.35);color:#1a1a1a}
+.chips{display:flex;gap:6px;flex:none;overflow:hidden}.chip{flex:none;height:24px;padding:0 10px;border:1.5px solid #1a1a1a;border-radius:12px;font-size:11.5px;display:flex;align-items:center}.chip.on{background:#E8B04B;border-color:#E8B04B}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px 10px}
+.pst{aspect-ratio:2/3;border:1.5px solid #1a1a1a;border-radius:4px;background:repeating-linear-gradient(45deg,#e4e1d9 0 2px,transparent 2px 9px);display:flex;align-items:center;justify-content:center;font:10px ui-monospace,Menlo,monospace;color:#888;position:relative}
+.t{font-size:12.5px;font-weight:700;line-height:1.1;margin-top:4px}.s{font-size:11px;color:#777;line-height:1.1}
+.ln{height:6px;border-radius:3px;background:#cfccc4}
+.nav{flex:none;display:grid;grid-template-columns:1fr 1fr;border-top:1.5px solid #1a1a1a;height:46px;font-size:13px}.nav div{display:flex;align-items:center;justify-content:center}.nav .on{color:#b27a12;font-weight:700;box-shadow:inset 0 3px 0 #E8B04B}
+.cta{height:40px;border-radius:20px;background:#E8B04B;border:1.5px solid #1a1a1a;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}.cta.out{background:transparent;border-color:#E8B04B;color:#b27a12}
+.btn{height:30px;border:1.5px solid #1a1a1a;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:12px;padding:0 10px}
+.ic{width:30px;height:30px;border:1.5px solid #1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;background:#fdfcf8}
+.tag{position:absolute;top:5px;right:5px;font-size:9px;padding:1px 5px;background:#1a1a1a;color:#E8B04B;border-radius:3px}
+.row{display:flex;gap:10px;align-items:center}.row .pst{width:42px;flex:none}
+.err{border:1.5px solid #E0584A;border-radius:10px;padding:10px;color:#c23d2f;font-size:13px;line-height:1.3;background:#fdf0ee}
+.del{color:#c23d2f;border-color:#E0584A}
+.bar{flex:none;padding:10px 14px 14px;border-top:1.5px solid #1a1a1a;display:flex;flex-direction:column;gap:6px;background:#fdfcf8}
+.seg{display:flex;gap:5px}.seg .btn{flex:1;padding:0 4px;font-size:11px}.seg .on{background:#E8B04B;border-color:#E8B04B;font-weight:700}
+.nt{margin:0;padding:0 0 0 16px;font-size:13px;line-height:1.35;color:#2a5bb8}.nt li{margin:2px 0}
+.fold{position:absolute;left:0;right:0;border-top:1.5px dashed #2a5bb8}.fold span{position:absolute;right:6px;top:-16px;font-size:11px;color:#2a5bb8}
+</style></helmet>
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">Watchlist · 3 écrans, 3 pistes chacun + états clés</span></div>
+<p style="margin:0 0 6px;font-size:14px;color:rgba(0,0,0,.6);max-width:760px">Première piste de chaque écran = la structure de la maquette « Cinéma classique ». Les autres explorent des variantes dans le cadre du brief (recherche en haut, grille 2 colonnes, CTA au pouce, nav en bas, pas de compte).</p>
+<div class="dv-opts">
+
+<div class="grp">Écran 1 · Accueil / Recherche <small>bouton principal : la barre de recherche</small></div>
+
+<div class="dv-opt" id="1a"><div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Maquette : recherche + genres + grille</div>
+<div class="ph"><div class="bd">
+<div class="h1">Watchlist</div>
+<div class="sr"><b></b>Chercher un film</div>
+<div class="chips"><div class="chip on">Tous</div><div class="chip">Drame</div><div class="chip">SF</div><div class="chip">Animation</div></div>
+<div class="h2">Sélection du moment</div>
+<div class="g2">
+<div><div class="pst">affiche</div><div class="t">Titre du film</div><div class="s">1994</div></div>
+<div><div class="pst">affiche<div class="tag">VU</div></div><div class="t">Titre du film</div><div class="s">2001</div></div>
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">2014</div></div>
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">2011</div></div>
+</div></div>
+<div class="nav"><div class="on">Accueil</div><div>Ma Watchlist</div></div></div>
+<ul class="nt"><li>Badge de statut sur l'affiche si déjà enregistré</li><li>Chips de genre = filtre sans taper</li></ul></div>
+
+<div class="dv-opt" id="1b"><div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Épurée : la grille seule</div>
+<div class="ph"><div class="bd" style="padding-top:14px">
+<div class="sr" style="height:40px;border-radius:20px"><b></b>Quel film cherchez-vous ?</div>
+<div class="g2" style="gap:8px">
+<div><div class="pst">affiche</div></div><div><div class="pst">affiche</div></div>
+<div><div class="pst">affiche</div></div><div><div class="pst">affiche</div></div>
+<div><div class="pst">affiche</div></div><div><div class="pst">affiche</div></div>
+</div></div>
+<div class="nav"><div class="on">Accueil</div><div>Ma Watchlist</div></div></div>
+<ul class="nt"><li>Pas de titre d'app ni de filtres : 6 affiches visibles</li><li>Titre + année sous l'affiche → ici remplacés par un voile en bas de l'affiche (à valider vs brief)</li></ul></div>
+
+<div class="dv-opt" id="1c"><div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>« Mémoire » : récents avant la grille</div>
+<div class="ph"><div class="bd">
+<div class="h1">Watchlist</div>
+<div class="sr"><b></b>Chercher un film</div>
+<div class="h2" style="font-size:12px">Recherches récentes</div>
+<div class="chips"><div class="chip">whiplash</div><div class="chip">miyazaki</div><div class="chip">drive</div></div>
+<div class="h2">Vous avez regardé <span>voir tout</span></div>
+<div style="display:flex;gap:8px"><div class="pst" style="width:54px">aff.</div><div class="pst" style="width:54px">aff.</div><div class="pst" style="width:54px">aff.</div><div class="pst" style="width:54px">aff.</div></div>
+<div class="h2">Sélection du moment</div>
+<div class="g2">
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">1994</div></div>
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">2001</div></div>
+</div></div>
+<div class="nav"><div class="on">Accueil</div><div>Ma Watchlist</div></div></div>
+<ul class="nt"><li>Répond à la citation d'Emma : retrouver un film à moitié oublié</li><li>Rangée fixe, défilement manuel (pas de carrousel auto)</li></ul></div>
+
+<div class="dv-opt" id="1d"><div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>État · recherche en direct</div>
+<div class="ph"><div class="bd">
+<div class="h1">Watchlist</div>
+<div class="sr on"><b></b>arri|<span style="margin-left:auto">×</span></div>
+<div class="h2">Résultats <span>2 films</span></div>
+<div class="g2">
+<div><div class="pst">affiche</div><div class="t">Arrival</div><div class="s">2016</div></div>
+<div><div class="pst">affiche</div><div class="t">Arrietty</div><div class="s">2010</div></div>
+</div></div>
+<div class="nav"><div class="on">Accueil</div><div>Ma Watchlist</div></div></div>
+<ul class="nt"><li>Les résultats remplacent la grille à chaque lettre</li><li>× pour effacer et revenir à la sélection</li></ul></div>
+
+<div class="dv-opt" id="1e"><div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>État · aucun résultat</div>
+<div class="ph"><div class="bd">
+<div class="h1">Watchlist</div>
+<div class="sr on"><b></b>zzqx<span style="margin-left:auto">×</span></div>
+<div class="err">Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.</div>
+<div class="h2" style="margin-top:6px">Sélection du moment</div>
+<div class="g2">
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">1994</div></div>
+<div><div class="pst">affiche</div><div class="t">Titre</div><div class="s">2001</div></div>
+</div></div>
+<div class="nav"><div class="on">Accueil</div><div>Ma Watchlist</div></div></div>
+<ul class="nt"><li>Message en rouge corail</li><li>La sélection reste dessous : l'écran n'est jamais vide</li></ul></div>
+
+<div class="grp">Écran 2 · Fiche film <small>bouton principal : « Ajouter à ma Watchlist », toujours visible</small></div>
+
+<div class="dv-opt" id="1f"><div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>Maquette : affiche haute + CTA fixe</div>
+<div class="ph"><div class="bd" style="padding:0;gap:0">
+<div class="pst" style="aspect-ratio:auto;height:230px;border:0;border-bottom:1.5px solid #1a1a1a;border-radius:0">grande affiche
+<div class="ic" style="position:absolute;top:12px;left:12px">←</div></div>
+<div style="padding:10px 14px;display:flex;flex-direction:column;gap:7px">
+<div class="h1" style="font-size:19px">Titre du film</div>
+<div style="font-size:12px;color:#666;display:flex;gap:6px">2016 · 1h56 · SF <span style="margin-left:auto;color:#b27a12;font-weight:700">★ 7.9</span></div>
+<div style="font-size:11px;color:#777;margin-top:4px">RÉALISATION</div><div style="font-weight:700;font-size:14px;margin-top:-6px">Nom du réalisateur</div>
+<div class="ln"></div><div class="ln"></div><div class="ln" style="width:70%"></div>
+</div></div>
+<div class="bar"><div class="cta">Ajouter à ma Watchlist</div></div></div>
+<ul class="nt"><li>CTA collé en bas, hors du scroll</li><li>Synopsis défile sous l'affiche</li></ul></div>
+
+<div class="dv-opt" id="1g"><div class="dv-olabel"><a class="dv-oid" href="#1g">1g</a>Affiche plein écran + panneau</div>
+<div class="ph"><div class="bd" style="padding:0">
+<div class="pst" style="position:absolute;inset:0;aspect-ratio:auto;border:0;border-radius:0;align-items:flex-start;padding-top:110px">affiche plein écran</div>
+<div class="ic" style="position:absolute;top:14px;left:12px">←</div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fdfcf8;border-top:1.5px solid #1a1a1a;border-radius:18px 18px 0 0;padding:8px 14px 14px;display:flex;flex-direction:column;gap:7px">
+<div style="width:36px;height:4px;border-radius:2px;background:#aaa;align-self:center"></div>
+<div class="h1" style="font-size:19px">Titre du film</div>
+<div style="font-size:12px;color:#666">2016 · 1h56 · SF · <b style="color:#b27a12">★ 7.9</b></div>
+<div style="font-size:12px">de <b>Nom du réalisateur</b></div>
+<div class="ln"></div><div class="ln" style="width:80%"></div>
+<div style="font-size:11px;color:#2a5bb8">↑ tirer pour lire tout le synopsis</div>
+<div class="cta">Ajouter à ma Watchlist</div>
+</div></div></div>
+<ul class="nt"><li>L'affiche occupe tout, le texte arrive après</li><li>Panneau tirable ; CTA reste en bas du panneau</li></ul></div>
+
+<div class="dv-opt" id="1h"><div class="dv-olabel"><a class="dv-oid" href="#1h">1h</a>Décision rapide : tout au-dessus de la ligne</div>
+<div class="ph"><div class="bd">
+<div class="ic">←</div>
+<div style="display:flex;gap:10px"><div class="pst" style="width:118px;flex:none">affiche</div>
+<div style="display:flex;flex-direction:column;gap:5px;min-width:0">
+<div class="h1" style="font-size:17px">Titre du film</div>
+<div style="font-size:12px;color:#666">2016<br>1h56<br>SF</div>
+<div style="color:#b27a12;font-weight:700;font-size:15px">★ 7.9</div>
+<div style="font-size:11.5px">de <b>Réalisateur</b></div></div></div>
+<div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln" style="width:60%"></div>
+</div>
+<div class="bar"><div class="cta">Ajouter à ma Watchlist</div></div></div>
+<ul class="nt"><li>Affiche moins grande mais synopsis lisible sans scroll</li><li>Moins « cinéma », plus utilitaire (transports)</li></ul></div>
+
+<div class="dv-opt" id="1i"><div class="dv-olabel"><a class="dv-oid" href="#1i">1i</a>État · déjà dans la watchlist</div>
+<div class="ph"><div class="bd" style="padding:0;gap:0">
+<div class="pst" style="aspect-ratio:auto;height:200px;border:0;border-bottom:1.5px solid #1a1a1a;border-radius:0">grande affiche
+<div class="ic" style="position:absolute;top:12px;left:12px">←</div>
+<div class="tag" style="top:18px;right:12px;font-size:10px;padding:3px 7px">À REGARDER</div></div>
+<div style="padding:10px 14px;display:flex;flex-direction:column;gap:7px">
+<div class="h1" style="font-size:19px">Titre du film</div>
+<div style="font-size:12px;color:#666">2016 · 1h56 · SF · <b style="color:#b27a12">★ 7.9</b></div>
+<div class="ln"></div><div class="ln" style="width:70%"></div>
+<div style="font-size:11px;color:#777;margin-top:4px">STATUT</div>
+<div class="seg"><div class="btn on">À regarder</div><div class="btn">En cours</div><div class="btn">Vu</div></div>
+</div></div>
+<div class="bar"><div class="cta out">✓ Dans ma Watchlist</div><div style="text-align:center;font-size:12px;color:#c23d2f">Retirer de ma watchlist</div></div></div>
+<ul class="nt"><li>Après l'appui : toast « Ajouté » + bouton contour</li><li>3 statuts en segments, 1 touche</li></ul></div>
+
+<div class="grp">Écran 3 · Ma Watchlist <small>bouton principal : « Chercher un film »</small></div>
+
+<div class="dv-opt" id="1j"><div class="dv-olabel"><a class="dv-oid" href="#1j">1j</a>Maquette : onglets + boutons en ligne</div>
+<div class="ph"><div class="bd">
+<div class="h1">Ma Watchlist</div>
+<div class="seg"><div class="btn on">À regarder</div><div class="btn">En cours</div><div class="btn">Vu</div></div>
+<div style="font-size:12px;color:#777">2 films</div>
+<div class="row"><div class="pst">aff.</div><div style="flex:1;min-width:0"><div class="t">Titre du film</div><div class="s">2014 · 1h47</div></div><div class="ic">→</div><div class="ic del">×</div></div>
+<div class="row"><div class="pst">aff.</div><div style="flex:1;min-width:0"><div class="t">Titre du film</div><div class="s">2016 · 1h56</div></div><div class="ic">→</div><div class="ic del">×</div></div>
+</div>
+<div class="nav"><div>Accueil</div><div class="on">Ma Watchlist</div></div></div>
+<ul class="nt"><li>→ fait avancer le statut, × retire (corail)</li><li>Tout visible, rien de caché</li></ul></div>
+
+<div class="dv-opt" id="1k"><div class="dv-olabel"><a class="dv-oid" href="#1k">1k</a>Balayage (swipe) sur la ligne</div>
+<div class="ph"><div class="bd">
+<div class="h1">Ma Watchlist</div>
+<div class="seg"><div class="btn on">À regarder · 3</div><div class="btn">En cours</div><div class="btn">Vu</div></div>
+<div class="row"><div class="pst" style="width:54px">aff.</div><div><div class="t">Titre du film</div><div class="s">2014 · 1h47</div></div></div>
+<div style="display:flex;border:1.5px solid #1a1a1a;border-radius:8px;overflow:hidden;height:88px">
+<div style="flex:1;display:flex;gap:10px;align-items:center;padding:0 8px;transform:translateX(-60px);background:#fdfcf8;min-width:0"><div class="pst" style="width:54px;flex:none">aff.</div><div><div class="t">Titre du film</div><div class="s">2016 · 1h56</div></div></div>
+<div style="width:60px;margin-left:-60px;background:#E0584A;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">Retirer</div></div>
+<div class="row"><div class="pst" style="width:54px">aff.</div><div><div class="t">Titre du film</div><div class="s">2011 · 1h40</div></div></div>
+</div>
+<div class="nav"><div>Accueil</div><div class="on">Ma Watchlist</div></div></div>
+<ul class="nt"><li>← retirer · → statut suivant</li><li>Lignes plus grandes, affiches plus visibles</li><li>Geste caché : prévoir un indice au 1er usage</li></ul></div>
+
+<div class="dv-opt" id="1l"><div class="dv-olabel"><a class="dv-oid" href="#1l">1l</a>Pastille de statut → menu</div>
+<div class="ph"><div class="bd">
+<div class="h1">Ma Watchlist</div>
+<div class="seg"><div class="btn on">À regarder</div><div class="btn">En cours</div><div class="btn">Vu</div></div>
+<div style="font-size:12px;color:#777">3 films</div>
+<div class="row"><div class="pst">aff.</div><div style="flex:1"><div class="t">Titre du film</div><div class="s">2014 · 1h47</div></div><div class="btn" style="font-size:11px">À regarder ▾</div></div>
+<div class="row"><div class="pst">aff.</div><div style="flex:1"><div class="t">Titre du film</div><div class="s">2016 · 1h56</div></div><div class="btn" style="font-size:11px">À regarder ▾</div></div>
+</div>
+<div style="position:absolute;inset:0;background:rgba(26,26,26,.35)"></div>
+<div style="position:absolute;left:0;right:0;bottom:0;background:#fdfcf8;border-top:1.5px solid #1a1a1a;border-radius:18px 18px 0 0;padding:14px;display:flex;flex-direction:column;gap:7px">
+<div class="t" style="margin:0 0 4px">Titre du film</div>
+<div class="btn" style="height:36px;background:#E8B04B;border-color:#E8B04B;font-weight:700">À regarder ✓</div><div class="btn" style="height:36px">En cours</div><div class="btn" style="height:36px">Vu</div><div class="btn del" style="height:36px">Retirer de ma liste</div></div></div>
+<ul class="nt"><li>Une seule cible par ligne, choix explicite</li><li>Permet de sauter de « À regarder » à « Vu »</li></ul></div>
+
+<div class="dv-opt" id="1m"><div class="dv-olabel"><a class="dv-oid" href="#1m">1m</a>État · liste vide</div>
+<div class="ph"><div class="bd">
+<div class="h1">Ma Watchlist</div>
+<div class="seg"><div class="btn">À regarder</div><div class="btn on">En cours</div><div class="btn">Vu</div></div>
+<div style="font-size:12px;color:#777">0 film</div>
+<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center">
+<div style="font-weight:700;font-size:16px">Aucun film en cours</div>
+<div style="font-size:12.5px;color:#666;line-height:1.3">Cherchez un titre et ajoutez-le pour le retrouver ici.</div>
+<div class="cta" style="padding:0 22px;margin-top:6px">Chercher un film</div></div></div>
+<div class="nav"><div>Accueil</div><div class="on">Ma Watchlist</div></div></div>
+<ul class="nt"><li>Message court + CTA ambre vers l'accueil</li><li>Titre adapté à l'onglet actif</li></ul></div>
+
+</div>
+<p class="dv-next">Essayer ensuite : « combine <a class="dv-oid" href="#1c">1c</a> avec la grille de <a class="dv-oid" href="#1b">1b</a> » · « pousse <a class="dv-oid" href="#1g">1g</a> avec les statuts de <a class="dv-oid" href="#1i">1i</a> » · « fais le parcours complet (flow) de la tâche n°1 »</p>
+</section>
+</x-dc>
+</body>
+</html>

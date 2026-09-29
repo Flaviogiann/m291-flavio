@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="./films.js"></script>
+<style>
+html,body{margin:0;padding:0;background:#05060A;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#FFB020}a:hover{color:#FFC759}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+::placeholder{color:#6E7687}
+@keyframes br-in{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
+@keyframes br-up{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes br-toast{0%{opacity:0;transform:translateY(10px)}10%{opacity:1;transform:none}84%{opacity:1;transform:none}100%{opacity:0}}
+.br-scroll{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.br-scroll::-webkit-scrollbar{display:none}
+.br-chips{display:flex;gap:1px;background:#1E2330;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.br-chips::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="width:100%;max-width:430px;margin:0 auto;height:100vh;position:relative;overflow:hidden;background:#0A0C12;color:#F2F3F5;font-family:'Space Grotesk',system-ui,sans-serif;display:flex;flex-direction:column">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:br-in .26s ease both">
+      <div style="padding:22px 18px 14px;border-bottom:1px solid #1E2330">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+          <h1 style="margin:0;font-family:'Archivo Black',system-ui,sans-serif;font-size:23px;letter-spacing:-.6px;text-transform:uppercase;color:#F2F3F5">Watchlist</h1>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;color:#6E7687">{{ catalogCount }}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;height:52px;padding:0 14px;background:#11141D;border:1px solid #262C3B">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#FFB020">/</span>
+          <input type="text" value="{{ query }}" onInput="{{ onSearch }}" placeholder="TITRE, RÉALISATEUR, GENRE" aria-label="Chercher un film" style="flex:1;min-width:0;height:50px;background:transparent;border:0;outline:none;color:#F2F3F5;font-size:15px;letter-spacing:.3px" />
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ clearSearch }}" aria-label="Effacer la recherche" style="width:44px;height:44px;margin-right:-10px;background:transparent;border:0;color:#9AA1B1;font-family:'JetBrains Mono',monospace;font-size:14px" style-hover="color:#F2F3F5" style-focus="outline:2px solid #FFB020;outline-offset:-4px">ESC</button>
+          </sc-if>
+        </div>
+      </div>
+      <div class="br-chips" role="group" aria-label="Filtrer par genre" style="border-bottom:1px solid #1E2330">
+        <sc-for list="{{ genres }}" as="g" hint-placeholder-count="4">
+          <button onClick="{{ g.go }}" aria-pressed="{{ g.active }}" style="{{ g.style }}">{{ g.label }}</button>
+        </sc-for>
+      </div>
+
+      <div class="br-scroll" style="flex:1;min-height:0">
+        <sc-if value="{{ showRecents }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:14px 18px;border-bottom:1px solid #1E2330;display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.2px;color:#6E7687">RÉCENT</span>
+            <sc-for list="{{ recents }}" as="r" hint-placeholder-count="2">
+              <button onClick="{{ r.go }}" style="min-height:44px;padding:0 14px;background:transparent;border:1px solid #262C3B;color:#C6CBD6;font-family:'JetBrains Mono',monospace;font-size:12px" style-hover="border-color:#FFB020;color:#FFB020" style-focus="outline:2px solid #FFB020;outline-offset:2px">{{ r.q }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:18px;padding:18px;border:1px solid #FF5A45;background:rgba(255,90,69,.08)">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;color:#FF5A45;margin-bottom:8px">AUCUN RÉSULTAT</div>
+            <p style="margin:0;color:#FFB3A8;font-size:14px;line-height:1.6">Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.</p>
+          </div>
+        </sc-if>
+
+        <div style="padding:14px 18px 8px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;color:#6E7687">{{ gridLabel }}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1E2330;border-top:1px solid #1E2330;border-bottom:1px solid #1E2330">
+          <sc-for list="{{ grid }}" as="f" hint-placeholder-count="6">
+            <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="display:block;text-align:left;padding:12px;background:#0A0C12;border:0" style-hover="background:#11141D" style-focus="outline:2px solid #FFB020;outline-offset:-2px">
+              <div style="position:relative;aspect-ratio:2/3;overflow:hidden">
+                <div style="{{ f.poster }}"></div>
+                <div style="position:absolute;top:0;left:0;padding:5px 7px;background:#0A0C12;font-family:'JetBrains Mono',monospace;font-size:10px;color:#9AA1B1">{{ f.idx }}</div>
+                <sc-if value="{{ f.hasStatus }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;bottom:0;right:0;padding:5px 7px;background:#FFB020;color:#120C00;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.6px;text-transform:uppercase">{{ f.status }}</div>
+                </sc-if>
+              </div>
+              <div style="font-family:'Archivo Black',system-ui,sans-serif;font-size:12.5px;line-height:1.25;text-transform:uppercase;letter-spacing:-.2px;color:#F2F3F5;margin-top:10px">{{ f.t }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A91A2;margin-top:5px">{{ f.sub }}</div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="height:18px"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isList }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1;display:flex;flex-direction:column;min-height:0;animation:br-in .26s ease both">
+      <div style="padding:22px 18px 0;border-bottom:1px solid #1E2330">
+        <h1 style="margin:0 0 14px;font-family:'Archivo Black',system-ui,sans-serif;font-size:23px;letter-spacing:-.6px;text-transform:uppercase">Ma Watchlist</h1>
+        <div role="tablist" style="display:flex;gap:1px;background:#1E2330;margin:0 -18px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button role="tab" aria-selected="{{ t.active }}" onClick="{{ t.go }}" style="{{ t.style }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div class="br-scroll" style="flex:1;min-height:0">
+        <div style="padding:14px 18px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;color:#6E7687">{{ listCount }}</div>
+
+        <sc-if value="{{ listEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="padding:26px 18px">
+            <div style="font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;text-transform:uppercase;line-height:1.2;margin-bottom:10px">{{ emptyTitle }}</div>
+            <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#8A91A2;max-width:280px">Cherchez un titre et ajoutez-le pour le retrouver ici.</p>
+            <button onClick="{{ goHome }}" style="min-height:52px;padding:0 24px;background:#FFB020;border:0;color:#120C00;font-family:'Archivo Black',system-ui,sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:.4px" style-hover="background:#FFC759" style-focus="outline:2px solid #FFC759;outline-offset:3px">Chercher un film</button>
+          </div>
+        </sc-if>
+
+        <sc-for list="{{ rows }}" as="f" hint-placeholder-count="0">
+          <div style="display:flex;align-items:stretch;border-top:1px solid #1E2330">
+            <button onClick="{{ f.open }}" aria-label="{{ f.aria }}" style="flex:1;min-width:0;display:flex;gap:14px;align-items:center;padding:12px 14px 12px 18px;background:transparent;border:0;text-align:left" style-hover="background:#11141D" style-focus="outline:2px solid #FFB020;outline-offset:-2px">
+              <div style="position:relative;width:52px;flex:none;aspect-ratio:2/3;overflow:hidden">
+                <div style="{{ f.poster }}"></div>
+              </div>
+              <div style="min-width:0;flex:1">
+                <div style="font-family:'Archivo Black',system-ui,sans-serif;font-size:13px;text-transform:uppercase;line-height:1.25;color:#F2F3F5">{{ f.t }}</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8A91A2;margin-top:6px">{{ f.meta }}</div>
+              </div>
+            </button>
+            <button onClick="{{ f.cycle }}" aria-label="{{ f.cycleAria }}" style="width:48px;flex:none;background:transparent;border:0;border-left:1px solid #1E2330;color:#FFB020;font-family:'JetBrains Mono',monospace;font-size:13px" style-hover="background:rgba(255,176,32,.1)" style-focus="outline:2px solid #FFB020;outline-offset:-2px">›</button>
+            <button onClick="{{ f.remove }}" aria-label="{{ f.removeAria }}" style="width:48px;flex:none;background:transparent;border:0;border-left:1px solid #1E2330;color:#FF5A45;font-family:'JetBrains Mono',monospace;font-size:13px" style-hover="background:rgba(255,90,69,.1)" style-focus="outline:2px solid #FF5A45;outline-offset:-2px">×</button>
+          </div>
+        </sc-for>
+        <div style="height:18px"></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav style="flex:none;display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1E2330;border-top:1px solid #1E2330">
+      <button onClick="{{ goHome }}" aria-label="Accueil" style="{{ navHomeStyle }}">Accueil</button>
+      <button onClick="{{ goList }}" aria-label="Ma Watchlist" style="{{ navListStyle }}">Ma Watchlist</button>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#0A0C12;display:flex;flex-direction:column;animation:br-up .3s cubic-bezier(.2,.9,.2,1) both">
+      <div class="br-scroll" style="flex:1;min-height:0">
+        <div style="position:relative;height:40vh;min-height:250px;border-bottom:1px solid #1E2330">
+          <div style="{{ sel.poster }}"></div>
+          <button onClick="{{ back }}" aria-label="Retour aux résultats" style="position:absolute;top:0;left:0;width:48px;height:48px;background:#0A0C12;border:0;border-right:1px solid #1E2330;border-bottom:1px solid #1E2330;color:#F2F3F5;font-family:'JetBrains Mono',monospace;font-size:15px" style-hover="color:#FFB020" style-focus="outline:2px solid #FFB020;outline-offset:-2px">←</button>
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;bottom:0;right:0;padding:8px 12px;background:#FFB020;color:#120C00;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase">{{ sel.status }}</div>
+          </sc-if>
+        </div>
+
+        <div style="padding:18px 18px 0">
+          <h1 style="margin:0;font-family:'Archivo Black',system-ui,sans-serif;font-size:27px;line-height:1.05;letter-spacing:-.8px;text-transform:uppercase;text-wrap:pretty">{{ sel.t }}</h1>
+          <div style="margin-top:18px;border-top:1px solid #1E2330">
+            <sc-for list="{{ specs }}" as="s" hint-placeholder-count="4">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid #1E2330;font-family:'JetBrains Mono',monospace;font-size:12px">
+                <span style="letter-spacing:1.2px;color:#6E7687">{{ s.k }}</span>
+                <span style="{{ s.vStyle }}">{{ s.v }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:18px 0 0;font-size:15px;line-height:1.65;color:#C6CBD6;text-wrap:pretty">{{ sel.s }}</p>
+
+          <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+            <div style="margin:22px 0 0">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;color:#6E7687;margin-bottom:10px">STATUT</div>
+              <div style="display:flex;gap:1px;background:#1E2330">
+                <sc-for list="{{ statusPicker }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.go }}" aria-pressed="{{ s.active }}" style="{{ s.style }}">{{ s.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <div style="height:24px"></div>
+        </div>
+      </div>
+
+      <div style="flex:none;border-top:1px solid #1E2330;background:#0A0C12;padding:14px 18px 18px">
+        <button onClick="{{ toggleAdd }}" style="{{ ctaStyle }}">{{ ctaLabel }}</button>
+        <sc-if value="{{ sel.hasStatus }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ removeSel }}" style="width:100%;min-height:44px;margin-top:6px;background:transparent;border:0;color:#FF5A45;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1.2px;text-transform:uppercase" style-hover="color:#FF8878" style-focus="outline:2px solid #FF5A45;outline-offset:-2px">Retirer de ma watchlist</button>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="{{ toastStyle }}">{{ toast }}</div>
+  </sc-if>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:860}}">
+class Component extends DCLogic {
+  state = { screen: "home", query: "", genre: "Tous", sel: null, from: "home", filter: 0, statuses: {}, recents: [], toast: "" };
+
+  genreStyle(active) {
+    return {
+      flex: "none", minHeight: "46px", padding: "0 14px", border: 0, whiteSpace: "nowrap",
+      background: active ? "#FFB020" : "#0A0C12",
+      color: active ? "#120C00" : "#8A91A2",
+      fontFamily: "'JetBrains Mono',monospace", fontSize: "11px", letterSpacing: ".8px", textTransform: "uppercase"
+    };
+  }
+
+  componentDidMount() {
+    const seed = { dune: "À regarder", furyroad: "En cours", moonlight: "Vu" };
+    const saved = window.WL ? window.WL.load("wl-brut") : null;
+    this.setState({ statuses: saved && Object.keys(saved).length ? saved : seed });
+    this.forceUpdate();
+  }
+
+  setStatus(id, status) {
+    const statuses = Object.assign({}, this.state.statuses);
+    if (status) statuses[id] = status; else delete statuses[id];
+    window.WL.save("wl-brut", statuses);
+    this.setState({ statuses: statuses });
+  }
+
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: "" }), 2300);
+  }
+
+  search(q) {
+    this.setState({ query: q });
+    clearTimeout(this._r);
+    if (q.trim().length > 2) {
+      this._r = setTimeout(() => {
+        const r = [q.trim()].concat(this.state.recents.filter(x => x.toLowerCase() !== q.trim().toLowerCase())).slice(0, 3);
+        this.setState({ recents: r });
+      }, 900);
+    }
+  }
+
+  poster(f) {
+    return { position: "absolute", inset: 0, background: "linear-gradient(180deg," + f.c1 + " 0%," + f.c2 + " 100%)" };
+  }
+
+  tabStyle(active) {
+    return {
+      flex: 1, minHeight: "46px", padding: "0 4px", border: 0,
+      background: active ? "#FFB020" : "#0A0C12",
+      color: active ? "#120C00" : "#8A91A2",
+      fontFamily: "'JetBrains Mono',monospace", fontSize: "11px", letterSpacing: ".6px", textTransform: "uppercase"
+    };
+  }
+
+  navStyle(active) {
+    return {
+      minHeight: "56px", border: 0, background: active ? "#11141D" : "#0A0C12",
+      color: active ? "#FFB020" : "#6E7687",
+      fontFamily: "'JetBrains Mono',monospace", fontSize: "11px", letterSpacing: "1.4px", textTransform: "uppercase"
+    };
+  }
+
+  pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  renderVals() {
+    const WL = window.WL;
+    if (!WL) return { isHome: true, showNav: true, grid: [], tabs: [], rows: [], recents: [], specs: [], statusPicker: [], gridLabel: "CATALOGUE", navHomeStyle: this.navStyle(true), navListStyle: this.navStyle(false) };
+    const st = this.state, S = st.statuses, q = st.query.trim();
+    const genreList = ["Tous"].concat(WL.films.map(f => f.g).filter((g, i, a) => a.indexOf(g) === i));
+    const matches = (q ? WL.films.filter(f => WL.norm(f.t + " " + f.dir + " " + f.g).indexOf(WL.norm(q)) > -1) : WL.films).filter(f => st.genre === "Tous" || f.g === st.genre);
+    const open = id => () => this.setState({ sel: id, screen: "detail", from: st.screen });
+
+    const grid = matches.map((f, i) => Object.assign({}, f, {
+      poster: this.poster(f), status: S[f.id] || "", hasStatus: !!S[f.id], idx: this.pad(i + 1),
+      sub: f.y + " · " + f.d, aria: "Ouvrir la fiche de " + f.t + ", " + f.y, open: open(f.id)
+    }));
+
+    const sel = st.sel ? WL.byId(st.sel) : null;
+    const selStatus = sel ? S[sel.id] : "";
+    const filterName = WL.statuses[st.filter];
+    const listed = WL.films.filter(f => S[f.id] === filterName);
+    const mono = { fontFamily: "'JetBrains Mono',monospace", fontSize: "12px", color: "#F2F3F5" };
+
+    return {
+      isHome: st.screen === "home", isList: st.screen === "list", isDetail: st.screen === "detail",
+      showNav: st.screen !== "detail",
+      catalogCount: this.pad(WL.films.length) + " FILMS",
+      query: st.query, hasQuery: st.query.length > 0,
+      onSearch: e => this.search(e.target.value),
+      clearSearch: () => this.setState({ query: "" }),
+      showRecents: !q && st.recents.length > 0,
+      recents: st.recents.map(r => ({ q: r, go: () => this.search(r) })),
+      genres: genreList.map(g => ({ label: g, active: g === st.genre, style: this.genreStyle(g === st.genre), go: () => this.setState({ genre: g }) })),
+      gridLabel: q ? "RÉSULTATS — " + this.pad(matches.length) : (st.genre === "Tous" ? "CATALOGUE" : st.genre.toUpperCase() + " — " + this.pad(matches.length)),
+      noResults: matches.length === 0 && (!!q || st.genre !== "Tous"),
+      grid: grid,
+
+      goHome: () => this.setState({ screen: "home" }),
+      goList: () => this.setState({ screen: "list" }),
+      navHomeStyle: this.navStyle(st.screen === "home"),
+      navListStyle: this.navStyle(st.screen === "list"),
+
+      tabs: WL.statuses.map((s, i) => ({ label: s, active: i === st.filter, style: this.tabStyle(i === st.filter), go: () => this.setState({ filter: i }) })),
+      listCount: this.pad(listed.length) + (listed.length > 1 ? " FILMS" : " FILM") + " — " + filterName.toUpperCase(),
+      listEmpty: listed.length === 0,
+      emptyTitle: st.filter === 0 ? "Rien à regarder" : st.filter === 1 ? "Aucun film en cours" : "Aucun film vu",
+      rows: listed.map(f => Object.assign({}, f, {
+        poster: this.poster(f), meta: f.y + " · " + f.d + " · " + f.g.toUpperCase(),
+        aria: "Ouvrir la fiche de " + f.t, open: open(f.id),
+        cycleAria: "Passer " + f.t + " au statut suivant", removeAria: "Retirer " + f.t + " de ma watchlist",
+        cycle: () => { const n = WL.next(S[f.id]); this.setStatus(f.id, n); this.flash(f.t.toUpperCase() + " → " + n); },
+        remove: () => { this.setStatus(f.id, null); this.flash(f.t.toUpperCase() + " RETIRÉ"); }
+      })),
+
+      sel: sel ? Object.assign({}, sel, { poster: this.poster(sel), status: selStatus, hasStatus: !!selStatus }) : null,
+      specs: sel ? [
+        { k: "ANNÉE", v: String(sel.y), vStyle: mono },
+        { k: "DURÉE", v: sel.d, vStyle: mono },
+        { k: "GENRE", v: sel.g, vStyle: mono },
+        { k: "RÉALISATION", v: sel.dir, vStyle: mono },
+        { k: "NOTE", v: sel.r.toFixed(1) + " / 10", vStyle: Object.assign({}, mono, { color: "#FFB020", fontWeight: 500 }) }
+      ] : [],
+      back: () => this.setState({ screen: st.from === "list" ? "list" : "home", sel: null }),
+      statusPicker: WL.statuses.map(s => ({ label: s, active: s === selStatus, style: this.tabStyle(s === selStatus), go: () => { this.setStatus(sel.id, s); this.flash("STATUT : " + s); } })),
+      ctaLabel: selStatus ? "Dans ma Watchlist" : "Ajouter à ma Watchlist",
+      ctaStyle: {
+        width: "100%", minHeight: "54px", border: selStatus ? "1px solid #FFB020" : "0",
+        background: selStatus ? "transparent" : "#FFB020",
+        color: selStatus ? "#FFB020" : "#120C00",
+        fontFamily: "'Archivo Black',system-ui,sans-serif", fontSize: "14px", textTransform: "uppercase", letterSpacing: ".4px"
+      },
+      toggleAdd: () => {
+        if (!sel) return;
+        if (selStatus) this.setState({ screen: "list", filter: WL.statuses.indexOf(selStatus), sel: null });
+        else { this.setStatus(sel.id, "À regarder"); this.flash("AJOUTÉ À VOTRE WATCHLIST"); }
+      },
+      removeSel: () => { this.setStatus(sel.id, null); this.flash(sel.t.toUpperCase() + " RETIRÉ"); },
+
+      hasToast: !!st.toast, toast: st.toast,
+      toastStyle: {
+        position: "absolute", left: 0, right: 0, bottom: st.screen === "detail" ? "92px" : "70px",
+        padding: "14px 18px", background: "#11141D", borderTop: "1px solid #FFB020",
+        color: "#F2F3F5", fontFamily: "'JetBrains Mono',monospace", fontSize: "11px", letterSpacing: "1px",
+        animation: "br-toast 2.3s ease both", zIndex: 30
+      }
+    };
+  }
+}
+
+</script>
+</body>
+</html>
