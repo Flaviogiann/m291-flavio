@@ -1,0 +1,640 @@
+@charset "utf-8";
+
+/* ============================================================================
+   ██ WATCHLIST — LIQUID GLASS
+   ██ FEUILLE DE STYLE · M291
+
+   TOUT LE RÉGLAGE VISUEL DE L'APPLICATION SE FAIT DANS LE BLOC :root
+   CI-DESSOUS. Aucune couleur, aucune taille et aucun flou ne doit être
+   écrit « en dur » ailleurs dans le fichier : on utilise var(--…).
+
+   Sommaire des variables
+     1 · COULEURS — fonds
+     2 · COULEURS — halos d'ambiance
+     3 · COULEURS — textes
+     4 · COULEURS — accent, statuts, alerte
+     5 · MATIÈRE VERRE (liquid glass)
+     6 · TYPOGRAPHIE
+     7 · RAYONS (arrondis)
+     8 · ESPACEMENTS
+     9 · OMBRES & ÉLÉVATION
+    10 · DIMENSIONS & CIBLES TACTILES
+    11 · MOUVEMENT
+    12 · PLANS (z-index)
+   ============================================================================ */
+
+:root {
+
+  /* ==========================================================================
+     1 · COULEURS — FONDS
+     Bleu nuit presque noir, comme demandé dans le brief : les affiches sont
+     la seule chose éclairée à l'écran.
+     ========================================================================== */
+
+  --c-fond-page:      #030407;   /* derrière l'application (hors cadre mobile) */
+  --c-fond-app:       #07080D;   /* fond de l'application                      */
+  --c-fond-eleve:     #141926;   /* fiche film, feuilles, aplats opaques       */
+  --c-fond-creux:     rgba(0, 0, 0, .22);   /* rail d'un sélecteur de statut   */
+
+  /* Couleur posée sur l'ambre ou sur le blanc plein (texte foncé) */
+  --c-encre:          #0B0C10;
+
+
+  /* ==========================================================================
+     2 · COULEURS — HALOS D'AMBIANCE
+     Trois taches de lumière floues qui dérivent lentement derrière
+     l'interface. C'est ce que le verre va capter et diffuser : sans elles,
+     l'effet liquid glass ne se voit pas.
+     ========================================================================== */
+
+  --c-halo-1:         rgba(92, 120, 255, .45);   /* bleu   — en haut à gauche  */
+  --c-halo-2:         rgba(255, 120, 90, .32);   /* corail — à droite, milieu  */
+  --c-halo-3:         rgba(70, 200, 190, .26);   /* turquoise — en bas à gauche*/
+
+  --halo-taille-1:    340px;
+  --halo-taille-2:    300px;
+  --halo-taille-3:    320px;
+  --halo-flou:        22px;    /* flou propre au halo, en plus du dégradé */
+  --halo-derive:      18px;    /* amplitude du déplacement de l'animation */
+
+
+  /* ==========================================================================
+     3 · COULEURS — TEXTES
+     Blanc cassé pour les titres, gris clair pour les informations
+     secondaires. Les valeurs « sur verre » sont volontairement plus
+     lumineuses : le verre éclaircit le fond et mange le contraste.
+     ========================================================================== */
+
+  --c-titre:          #FFFFFF;                      /* h1, h2, titres de carte */
+  --c-texte:          #F5F6FA;                      /* texte courant           */
+  --c-texte-doux:     rgba(245, 246, 250, .86);     /* synopsis                */
+  --c-texte-faible:   rgba(235, 238, 245, .62);     /* année · genre, compteurs*/
+  --c-texte-indice:   rgba(235, 238, 245, .55);     /* placeholder, icônes     */
+  --c-texte-inactif:  rgba(235, 238, 245, .66);     /* onglet non sélectionné  */
+  --c-sur-verre:      #FFFFFF;                      /* texte posé sur le verre */
+  --c-lien:           #9CC8FF;
+  --c-lien-survol:    #C4DEFF;
+
+  /* Trait de focus clavier — doit rester visible sur verre comme sur affiche */
+  --c-focus:          #9CC8FF;
+  --focus-epaisseur:  2px;
+  --focus-ecart:      2px;
+
+
+  /* ==========================================================================
+     4 · COULEURS — ACCENT, STATUTS, ALERTE
+     ========================================================================== */
+
+  /* Accent principal : blanc plein (bouton d'ajout, pilule de filtre active).
+     Dans une interface en verre, c'est l'opacité totale qui fait l'accent. */
+  --c-accent:         #FFFFFF;
+  --c-accent-encre:   var(--c-encre);
+
+  /* Note du film — ambre doré du brief */
+  --c-note:           #FFD27A;
+  --c-note-fond:      rgba(255, 200, 90, .14);
+  --c-note-bordure:   rgba(255, 200, 90, .24);
+
+  /* Les trois statuts. Jamais seuls : toujours accompagnés du libellé texte,
+     pour ne pas faire porter l'information par la couleur seule. */
+  --c-statut-a-voir:  #7DB6FF;   /* À regarder */
+  --c-statut-en-cours:#FFB35C;   /* En cours   */
+  --c-statut-vu:      #5BE0A0;   /* Vu         */
+  --statut-point:     7px;       /* diamètre de la pastille colorée */
+  --statut-lueur:     8px;       /* halo lumineux autour de la pastille */
+
+  /* Alerte / retrait — rouge corail du brief */
+  --c-alerte:         #FF8A80;
+  --c-alerte-fond:    rgba(255, 80, 70, .10);
+  --c-alerte-bordure: rgba(255, 110, 100, .28);
+
+
+  /* ==========================================================================
+     5 · MATIÈRE VERRE (LIQUID GLASS)
+     ──────────────────────────────────────────────────────────────────────────
+     Le cœur de la maquette. Une seule matière, réglée par ces variables,
+     réutilisée sur tous les éléments flottants.
+
+     Comment ça marche :
+       · --v-teinte-rvb + --v-opacite  → la transparence du fond
+       · --v-flou                      → backdrop-filter: blur()   (le dépoli)
+       · --v-saturation                → backdrop-filter: saturate() (les
+                                         couleurs derrière le verre reviennent)
+       · --v-bordure                   → le bord fin qui détache la plaque
+       · --v-reflet-haut / -bas        → les deux reflets internes qui donnent
+                                         l'épaisseur (lumière sur l'arête)
+       · --v-ombre-portee              → le détachement du fond
+
+     La classe .verre lit ces variables. Un composant qui veut un verre
+     différent redéfinit simplement la variable chez lui (voir §5.4) :
+     c'est la cascade qui fait le travail, pas une nouvelle règle.
+     ========================================================================== */
+
+  /* --- 5.1 · Réglage par défaut (verre clair, posé sur le fond) ------------ */
+
+  --v-teinte-rvb:     255, 255, 255;   /* verre clair : teinte blanche        */
+  --v-opacite:        .055;            /* ← LA TRANSPARENCE DU VERRE          */
+  --v-flou:           26px;            /* ← LE DÉPOLI                         */
+  --v-saturation:     200%;            /* ← LA VIVACITÉ DE CE QU'ON VOIT      */
+
+  --v-fond:           rgba(var(--v-teinte-rvb), var(--v-opacite));
+  --v-bordure:        rgba(255, 255, 255, .14);
+  --v-bordure-largeur: 1px;
+  --v-reflet-haut:    rgba(255, 255, 255, .22);
+  --v-reflet-bas:     rgba(255, 255, 255, .00);
+  --v-ombre-portee:   0 10px 30px rgba(0, 0, 0, .30);
+
+  /* Ombre de texte : utilisée uniquement sur le verre très transparent
+     (navigation, toast), où le fond peut être clair comme sombre. */
+  --v-ombre-texte:    0 1px 8px rgba(0, 0, 0, .60);
+
+  /* --- 5.2 · Teintes de verre -------------------------------------------- */
+
+  --v-teinte-claire:  255, 255, 255;   /* plaques posées sur le fond          */
+  --v-teinte-sombre:  40, 44, 58;      /* contrôles flottants sur du contenu  */
+  --v-teinte-neutre:  20, 22, 30;      /* pastille de statut, toast           */
+  --v-teinte-encre:   30, 32, 42;      /* bouton retour sur l'affiche         */
+
+  /* --- 5.3 · Paliers d'opacité et de flou -------------------------------- */
+
+  --v-opacite-voile:  .035;   /* à peine là : feuille de liste, état vide     */
+  --v-opacite-fine:   .055;   /* barre de recherche, pilule inactive          */
+  --v-opacite-moyen:  .100;   /* bouton d'action secondaire                   */
+  --v-opacite-active: .200;   /* onglet / entrée de navigation sélectionné    */
+
+  --v-flou-leger:     5px;    /* navigation et toast : on veut VOIR à travers */
+  --v-flou-moyen:     20px;   /* pilules, pastilles                           */
+  --v-flou-fort:      26px;   /* barre de recherche, barre d'action           */
+  --v-flou-intense:   32px;   /* carte de la fiche film                       */
+
+  --v-saturation-douce:  170%;
+  --v-saturation-forte:  200%;
+  --v-saturation-max:    210%;
+
+  /* --- 5.4 · Reflets et bordures par intensité --------------------------- */
+
+  --v-bordure-discrete: rgba(255, 255, 255, .12);
+  --v-bordure-nette:    rgba(255, 255, 255, .16);
+  --v-bordure-vive:     rgba(255, 255, 255, .22);
+
+  --v-reflet-doux:      rgba(255, 255, 255, .18);
+  --v-reflet-net:       rgba(255, 255, 255, .22);
+  --v-reflet-vif:       rgba(255, 255, 255, .42);   /* arête éclairée         */
+  --v-reflet-dessous:   rgba(255, 255, 255, .06);   /* rebond sous la plaque  */
+
+  /* --- 5.5 · Verre posé SUR une affiche ---------------------------------- */
+
+  /* Voile dégradé qui garantit la lisibilité d'un titre posé sur l'affiche,
+     quelle que soit la couleur de l'image. */
+  --v-voile-affiche:  linear-gradient(
+                        160deg,
+                        rgba(255, 255, 255, .18) 0%,
+                        rgba(255, 255, 255, 0)  38%
+                      );
+
+  /* Dégradé de fondu entre l'affiche de la fiche film et le fond */
+  --v-fondu-affiche:  linear-gradient(
+                        180deg,
+                        rgba(7, 8, 13, .30)  0%,
+                        rgba(7, 8, 13, 0)   30%,
+                        rgba(7, 8, 13, 0)   55%,
+                        rgba(7, 8, 13, .85) 92%
+                      );
+
+  /* Lumière de l'affiche : le dégradé qui tient lieu d'image.
+     Les deux couleurs viennent du film lui-même (--film-c1 / --film-c2,
+     posées sur la carte), donc le dégradé NE PEUT PAS être assemblé ici :
+     une variable déclarée sur :root résout ses var() sur :root, où les
+     couleurs du film n'existent pas — le dégradé serait invalide et
+     l'affiche sortirait noire. On ne range donc ici que sa géométrie,
+     et c'est .affiche-lumiere (plus bas) qui assemble le dégradé. */
+  --affiche-centre:   120% 80% at 70% 10%;   /* position de la source */
+  --affiche-arret:    75%;                   /* fin du dégradé        */
+
+  /* Liseré interne qui donne son épaisseur à une affiche */
+  --v-affiche-arete:  inset 0 1px 0 rgba(255, 255, 255, .42),
+                      inset 0 0 0 1px rgba(255, 255, 255, .10);
+
+
+  /* ==========================================================================
+     6 · TYPOGRAPHIE
+     Police système en premier (c'est elle qui donne le rendu « iOS » de la
+     maquette), Manrope en secours. Une seule famille, six tailles.
+     ========================================================================== */
+
+  --police: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Manrope",
+            "Segoe UI", system-ui, sans-serif;
+
+  --fs-micro:   0.6875rem;   /* 11px — libellé de pastille de statut       */
+  --fs-petit:   0.8125rem;   /* 13px — année · genre, compteurs, étiquettes*/
+  --fs-meta:    0.875rem;    /* 14px — onglets, nombre de films            */
+  --fs-corps:   0.9375rem;   /* 15px — titre de carte, pilules, lignes     */
+  --fs-lead:    1rem;        /* 16px — synopsis, bouton secondaire         */
+  --fs-input:   1.0625rem;   /* 17px — champ de recherche, bouton d'ajout  */
+  --fs-h3:      1.375rem;    /* 22px — titre de section (« À l'affiche »)  */
+  --fs-h2:      1.75rem;     /* 28px — titre de la fiche film              */
+  --fs-h1:      2.125rem;    /* 34px — « Watchlist », « Ma Watchlist »     */
+
+  --fw-normal:    400;
+  --fw-moyen:     500;
+  --fw-demi:      600;
+  --fw-gras:      700;
+
+  --lh-serre:     1.05;   /* grands titres                */
+  --lh-titre:     1.25;   /* titres de carte              */
+  --lh-corps:     1.60;   /* synopsis, paragraphes        */
+
+  /* Les grands titres de la maquette sont resserrés : c'est ce qui donne
+     l'allure « application système » plutôt que « page web ». */
+  --ls-h1:       -0.9px;
+  --ls-h2:       -0.8px;
+  --ls-h3:       -0.5px;
+  --ls-titre:    -0.3px;
+  --ls-corps:    -0.2px;
+  --ls-fin:      -0.15px;
+
+
+  /* ==========================================================================
+     7 · RAYONS (ARRONDIS)
+     Une seule échelle. Les pilules sont de vraies demi-hauteurs, pas 999px :
+     la maquette s'appuie sur des arrondis mesurés.
+     ========================================================================== */
+
+  --r-pastille:   10px;   /* point de statut, petite puce            */
+  --r-etiquette:  12px;   /* étiquette année / durée / genre         */
+  --r-badge:      14px;   /* pastille de statut sur l'affiche        */
+  --r-mini:       10px;   /* mini-affiche d'une ligne de liste       */
+  --r-carte:      20px;   /* affiche de la grille                    */
+  --r-segment:    20px;   /* onglet à l'intérieur du rail            */
+  --r-pilule:     22px;   /* filtre de genre, bouton rond 44px       */
+  --r-rail:       24px;   /* rail des onglets                        */
+  --r-champ:      25px;   /* barre de recherche (hauteur 50px)       */
+  --r-bouton:     27px;   /* bouton d'ajout (hauteur 54px)           */
+  --r-feuille:    26px;   /* feuille de liste, toast                 */
+  --r-nav:        32px;   /* barre de navigation flottante           */
+  --r-fiche:      30px;   /* carte de la fiche film                  */
+  --r-barre:      34px;   /* barre d'action basse de la fiche        */
+  --r-rond:       50%;    /* halos                                   */
+
+
+  /* ==========================================================================
+     8 · ESPACEMENTS
+     Échelle de 4 en 4. --sp-marge est la marge latérale de l'écran : la
+     changer décale toute l'application d'un coup.
+     ========================================================================== */
+
+  --sp-1:   4px;
+  --sp-2:   8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-5:  20px;
+  --sp-6:  24px;
+  --sp-7:  28px;
+  --sp-8:  32px;
+
+  --sp-marge:        var(--sp-5);   /* marge gauche / droite de l'écran      */
+  --sp-grille-col:   14px;          /* gouttière verticale de la grille      */
+  --sp-grille-ligne: var(--sp-5);   /* gouttière horizontale de la grille    */
+
+  /* Réserve de défilement : la navigation flottante ne doit jamais masquer
+     la dernière rangée de la grille. */
+  --sp-reserve-nav:  120px;
+  --sp-reserve-cta:  130px;   /* idem pour la barre d'action de la fiche */
+
+
+  /* ==========================================================================
+     9 · OMBRES & ÉLÉVATION
+     ========================================================================== */
+
+  --om-affiche:    0 16px 36px rgba(0, 0, 0, .50);
+  --om-plaque:     0 10px 30px rgba(0, 0, 0, .30);
+  --om-feuille:    0 16px 40px rgba(0, 0, 0, .30);
+  --om-nav:        0 18px 40px rgba(0, 0, 0, .45);
+  --om-barre:      0 18px 44px rgba(0, 0, 0, .50);
+  --om-fiche:      0 24px 60px rgba(0, 0, 0, .45);
+  --om-toast:      0 14px 36px rgba(0, 0, 0, .50);
+
+  /* Onglet / entrée de navigation sélectionné : le relief vient d'un reflet
+     interne en haut ET d'une ombre courte en bas. */
+  --om-selection:  inset 0 1px 0 var(--v-reflet-vif),
+                   0 4px 14px rgba(0, 0, 0, .25);
+
+  /* Lueur d'un élément plein (bouton blanc) */
+  --om-accent:     0 8px 26px rgba(255, 255, 255, .18);
+  --om-accent-doux:0 6px 20px rgba(255, 255, 255, .14);
+
+  --om-texte-affiche: 0 2px 12px rgba(0, 0, 0, .50);
+
+
+  /* ==========================================================================
+    10 · DIMENSIONS & CIBLES TACTILES
+     Le brief interdit toute cible de moins de 44px : --tap-min est le
+     plancher, et on ne descend jamais en dessous.
+     ========================================================================== */
+
+  --tap-min:        44px;   /* plancher imposé par le brief            */
+  --tap-champ:      50px;   /* barre de recherche, entrée de navigation*/
+  --tap-cta:        54px;   /* bouton « Ajouter à ma Watchlist »       */
+
+  /* Onglet d'un rail segmenté. La maquette le pose à 40px, mais le brief
+     interdit toute cible de moins de 44px : on remonte à --tap-min, le rail
+     passe de 48 à 52px de haut. Écart assumé, la règle prime sur la maquette. */
+  --tap-segment:    var(--tap-min);
+
+  --app-largeur:    430px;  /* largeur du cadre mobile                 */
+  --affiche-ratio:  2 / 3;  /* format d'une affiche de cinéma          */
+  --affiche-mini:   54px;   /* largeur de l'affiche d'une ligne        */
+  --fiche-hauteur:  56vh;   /* hauteur de l'affiche sur la fiche film  */
+  --fiche-min:      320px;  /* …sans jamais descendre sous cette valeur*/
+  --fiche-remontee: -70px;  /* la carte mord sur le bas de l'affiche   */
+
+
+  /* ==========================================================================
+    11 · MOUVEMENT
+     Courbes « sortie rapide, arrivée douce » : le mouvement doit se sentir
+     mais ne jamais faire attendre.
+     ========================================================================== */
+
+  --t-rapide:      .20s;
+  --t-normal:      .25s;
+  --t-ecran:       .35s;   /* apparition d'un écran            */
+  --t-feuille:     .42s;   /* montée de la fiche film          */
+  --t-toast:      2.40s;   /* durée totale d'un message        */
+
+  --courbe:        cubic-bezier(.2, .8, .2, 1);
+  --courbe-feuille:cubic-bezier(.2, .9, .2, 1);
+
+  --anim-halo-1:  18s;
+  --anim-halo-2:  22s;
+  --anim-halo-3:  26s;
+
+  --echelle-appui: .97;   /* enfoncement au toucher d'une carte  */
+  --echelle-rond:  .92;   /* …d'un bouton rond                   */
+
+
+  /* ==========================================================================
+    12 · PLANS (Z-INDEX)
+     ========================================================================== */
+
+  --z-fond:     0;
+  --z-contenu:  1;
+  --z-nav:     20;
+  --z-fiche:   25;
+  --z-toast:   40;
+}
+
+
+/* ============================================================================
+   REPLI SI LE VERRE N'EST PAS SUPPORTÉ
+   Sans backdrop-filter, un fond à 5 % d'opacité donne une plaque invisible et
+   un texte illisible. On remplace donc la matière par un aplat opaque, en
+   redéfinissant les mêmes variables : aucun composant n'a besoin de le savoir.
+   ============================================================================ */
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --v-fond:           #1C2230;
+    --v-opacite:        1;
+    --v-flou:           0px;
+    --v-bordure:        rgba(255, 255, 255, .18);
+    --v-ombre-texte:    none;
+
+    --v-opacite-voile:  1;
+    --v-opacite-fine:   1;
+    --v-opacite-moyen:  1;
+    --v-opacite-active: 1;
+  }
+
+  .verre { background: var(--v-fond); }
+}
+
+
+/* ============================================================================
+   MOUVEMENT RÉDUIT
+   On coupe la dérive des halos et les apparitions d'écran, on garde les
+   changements d'état (couleur, fond) qui portent de l'information.
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --t-ecran:   .01s;
+    --t-feuille: .01s;
+  }
+
+  .halo { animation: none; }
+}
+
+
+/* ============================================================================
+   BASE
+   ============================================================================ */
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--c-fond-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  font-family: var(--police);
+  color: var(--c-texte);
+}
+
+a         { color: var(--c-lien); }
+a:hover   { color: var(--c-lien-survol); }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input { font-family: inherit; }
+
+::placeholder { color: var(--c-texte-indice); }
+
+/* Un seul trait de focus pour toute l'application */
+:is(button, input, [tabindex]):focus-visible {
+  outline: var(--focus-epaisseur) solid var(--c-focus);
+  outline-offset: var(--focus-ecart);
+}
+
+
+/* ============================================================================
+   LA MATIÈRE VERRE
+   Une seule classe, pilotée par les variables du §5. Les variantes ne
+   redéfinissent pas la règle : elles changent les variables.
+   ============================================================================ */
+
+.verre {
+  background: var(--v-fond);
+  border: var(--v-bordure-largeur) solid var(--v-bordure);
+  backdrop-filter: blur(var(--v-flou)) saturate(var(--v-saturation));
+  -webkit-backdrop-filter: blur(var(--v-flou)) saturate(var(--v-saturation));
+  box-shadow: inset 0 1px 0 var(--v-reflet-haut),
+              inset 0 -1px 0 var(--v-reflet-bas),
+              var(--v-ombre-portee);
+}
+
+/* --- Variantes : on ne touche qu'aux variables ---------------------------- */
+
+/* À peine là — feuille de liste, bloc « liste vide » */
+.verre--voile {
+  --v-opacite:      var(--v-opacite-voile);
+  --v-flou:         var(--v-flou-intense);
+  --v-saturation:   var(--v-saturation-douce);
+  --v-bordure:      var(--v-bordure-discrete);
+  --v-reflet-haut:  var(--v-reflet-doux);
+  --v-ombre-portee: var(--om-feuille);
+}
+
+/* Verre de travail — barre de recherche, pilules */
+.verre--fin {
+  --v-opacite:      var(--v-opacite-fine);
+  --v-flou:         var(--v-flou-fort);
+  --v-saturation:   var(--v-saturation-forte);
+  --v-reflet-haut:  var(--v-reflet-net);
+  --v-ombre-portee: var(--om-plaque);
+}
+
+/* Carte de la fiche film — le verre le plus épais */
+.verre--epais {
+  --v-opacite:      .05;
+  --v-flou:         var(--v-flou-intense);
+  --v-saturation:   var(--v-saturation-forte);
+  --v-bordure:      var(--v-bordure-nette);
+  --v-reflet-haut:  var(--v-reflet-vif);
+  --v-ombre-portee: var(--om-fiche);
+}
+
+/* Verre flottant teinté sombre — navigation, toast, barre d'action.
+   Peu de flou, beaucoup de reflet : c'est la plaque qu'on voit « à travers ».
+   Le texte posé dessus reçoit une ombre, car le fond derrière est variable. */
+.verre--flottant {
+  --v-teinte-rvb:   var(--v-teinte-sombre);
+  --v-opacite:      .12;
+  --v-flou:         var(--v-flou-leger);
+  --v-saturation:   var(--v-saturation-douce);
+  --v-bordure:      var(--v-bordure-nette);
+  --v-reflet-haut:  var(--v-reflet-vif);
+  --v-reflet-bas:   var(--v-reflet-dessous);
+  --v-ombre-portee: var(--om-nav);
+
+  text-shadow: var(--v-ombre-texte);
+}
+
+/* Pastille posée sur une affiche — fond neutre, bord vif */
+.verre--pastille {
+  --v-teinte-rvb:   var(--v-teinte-neutre);
+  --v-opacite:      .18;
+  --v-flou:         18px;
+  --v-saturation:   180%;
+  --v-bordure:      var(--v-bordure-vive);
+  --v-reflet-haut:  transparent;
+  --v-ombre-portee: none;
+}
+
+
+/* ============================================================================
+   L'AFFICHE
+   Pas d'image : chaque affiche est un dégradé construit avec les deux
+   couleurs du film. On les pose sur l'élément (--film-c1 / --film-c2) et
+   le dégradé se fabrique ici, là où ces couleurs existent vraiment.
+   ============================================================================ */
+
+.affiche-lumiere {
+  background: radial-gradient(
+                var(--affiche-centre),
+                var(--film-c2) 0%,
+                var(--film-c1) var(--affiche-arret)
+              );
+}
+
+
+/* ============================================================================
+   HALOS D'AMBIANCE
+   La lumière que le verre capte. Purement décoratif : aria-hidden côté HTML.
+   ============================================================================ */
+
+.halos {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: var(--z-fond);
+}
+
+.halo {
+  position: absolute;
+  border-radius: var(--r-rond);
+  filter: blur(var(--halo-flou));
+  animation: halo-derive var(--anim-halo-1) ease-in-out infinite;
+}
+
+.halo--1 {
+  width: var(--halo-taille-1);
+  height: var(--halo-taille-1);
+  left: -120px;
+  top: -90px;
+  background: radial-gradient(circle, var(--c-halo-1) 0%, transparent 70%);
+  animation-duration: var(--anim-halo-1);
+}
+
+.halo--2 {
+  width: var(--halo-taille-2);
+  height: var(--halo-taille-2);
+  right: -110px;
+  top: 220px;
+  background: radial-gradient(circle, var(--c-halo-2) 0%, transparent 70%);
+  animation-duration: var(--anim-halo-2);
+  animation-direction: reverse;
+}
+
+.halo--3 {
+  width: var(--halo-taille-3);
+  height: var(--halo-taille-3);
+  left: -60px;
+  bottom: -120px;
+  background: radial-gradient(circle, var(--c-halo-3) 0%, transparent 70%);
+  animation-duration: var(--anim-halo-3);
+}
+
+@keyframes halo-derive {
+  0%, 100% { translate: 0 0; }
+  50%      { translate: var(--halo-derive) calc(var(--halo-derive) * -1.22); }
+}
+
+
+/* ============================================================================
+   CADRE DE L'APPLICATION
+   ============================================================================ */
+
+.app {
+  position: relative;
+  width: 100%;
+  max-width: var(--app-largeur);
+  height: 100vh;
+  height: 100dvh;          /* suit l'apparition de la barre du navigateur */
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: var(--c-fond-app);
+  color: var(--c-texte);
+}
+
+/* Zone défilante : pas de barre visible, et le défilement ne contamine
+   pas la page derrière. */
+.defilement {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.defilement::-webkit-scrollbar { display: none; }
