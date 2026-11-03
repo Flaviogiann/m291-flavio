@@ -299,7 +299,10 @@
   /* Réserve de défilement : la navigation flottante ne doit jamais masquer
      la dernière rangée de la grille. */
   --sp-reserve-nav:  120px;
-  --sp-reserve-cta:  130px;   /* idem pour la barre d'action de la fiche */
+  /* Idem pour la barre d'action de la fiche. Celle-ci mesure ~121px et
+     flotte à 20px du bas : il faut dégager au moins 141px, sinon le
+     sélecteur de statut reste coincé dessous en fin de défilement. */
+  --sp-reserve-cta:  160px;
 
 
   /* ==========================================================================
@@ -638,3 +641,842 @@ input { font-family: inherit; }
 }
 
 .defilement::-webkit-scrollbar { display: none; }
+
+
+/* ============================================================================
+   ██ COMPOSANTS
+   ██ À partir d'ici : plus une seule valeur en dur, uniquement des var(--…).
+   ============================================================================ */
+
+
+/* ----------------------------------------------------------------------------
+   ÉCRANS
+   Trois écrans dans le même document. app.js pose / retire l'attribut hidden.
+   -------------------------------------------------------------------------- */
+
+.ecran {
+  position: relative;
+  z-index: var(--z-contenu);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  animation: ecran-entre var(--t-ecran) var(--courbe) both;
+}
+
+/* display:flex l'emporterait sur hidden : il faut le dire explicitement. */
+.ecran[hidden] { display: none; }
+
+@keyframes ecran-entre {
+  from { opacity: 0; scale: .985; }
+  to   { opacity: 1; scale: 1; }
+}
+
+.entete { padding: var(--sp-7) var(--sp-marge) var(--sp-3); }
+
+.titre-ecran {
+  margin: 0 0 var(--sp-4);
+  font-size: var(--fs-h1);
+  font-weight: var(--fw-gras);
+  letter-spacing: var(--ls-h1);
+  line-height: var(--lh-serre);
+  color: var(--c-titre);
+}
+
+/* La navigation flottante ne doit jamais masquer la dernière rangée. */
+.defilement { padding: var(--sp-1) var(--sp-marge) var(--sp-reserve-nav); }
+
+
+/* ----------------------------------------------------------------------------
+   BARRE DE RECHERCHE
+   Bouton principal de l'écran 1 : c'est le premier geste de la tâche n°1.
+   -------------------------------------------------------------------------- */
+
+.recherche {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  height: var(--tap-champ);
+  padding: 0 var(--sp-2) 0 var(--sp-4);
+  border-radius: var(--r-champ);
+}
+
+.recherche__loupe { flex: none; color: var(--c-texte-indice); }
+
+.recherche__champ {
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--tap-champ) - 2px);
+  background: transparent;
+  border: 0;
+  outline: none;
+  color: var(--c-titre);
+  font-size: var(--fs-input);
+  letter-spacing: var(--ls-corps);
+}
+
+/* La croix native du type=search ferait doublon avec notre bouton. */
+.recherche__champ::-webkit-search-cancel-button { display: none; }
+
+.recherche__effacer {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-pilule);
+}
+
+.recherche__effacer span {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--r-pastille);
+  background: rgba(var(--v-teinte-claire), .28);
+  color: var(--c-encre);
+  font-size: var(--fs-petit);
+  font-weight: var(--fw-gras);
+  line-height: 20px;
+  text-align: center;
+}
+
+.recherche__effacer:focus-visible { outline-offset: calc(var(--focus-ecart) * -2); }
+
+
+/* ----------------------------------------------------------------------------
+   FILTRES DE GENRE — rangée de pilules qui défile horizontalement
+   -------------------------------------------------------------------------- */
+
+.filtres {
+  display: flex;
+  gap: var(--sp-2);
+  margin: var(--sp-3) calc(var(--sp-marge) * -1) 0;
+  padding: 2px var(--sp-marge) var(--sp-1);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.filtres::-webkit-scrollbar { display: none; }
+
+.filtre {
+  flex: none;
+  min-height: var(--tap-min);
+  padding: 0 17px;
+  border-radius: var(--r-pilule);
+  white-space: nowrap;
+  color: var(--c-texte-doux);
+  font-size: var(--fs-corps);
+  font-weight: var(--fw-moyen);
+  letter-spacing: var(--ls-corps);
+  transition: background var(--t-rapide), color var(--t-rapide);
+}
+
+/* Pilule active : l'opacité totale fait l'accent dans une interface en verre. */
+.filtre[aria-pressed="true"] {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+  box-shadow: var(--om-accent-doux);
+  color: var(--c-accent-encre);
+  font-weight: var(--fw-demi);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+
+/* ----------------------------------------------------------------------------
+   RECHERCHES RÉCENTES
+   -------------------------------------------------------------------------- */
+
+.recentes { padding: var(--sp-2) 0 6px; }
+
+.recentes__titre {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-petit);
+  font-weight: var(--fw-demi);
+  color: var(--c-texte-faible);
+}
+
+.recentes__liste { display: flex; flex-wrap: wrap; gap: var(--sp-2); }
+
+.recente {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  min-height: var(--tap-min);
+  padding: 0 var(--sp-4);
+  border-radius: var(--r-pilule);
+  color: var(--c-texte);
+  font-size: var(--fs-corps);
+}
+
+.recente__fleche { color: var(--c-texte-indice); font-size: var(--fs-petit); }
+
+
+/* ----------------------------------------------------------------------------
+   EN-TÊTE DE SECTION & MESSAGE D'ALERTE
+   -------------------------------------------------------------------------- */
+
+.section-entete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: var(--sp-3) 0;
+}
+
+.section-titre {
+  margin: 0;
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-gras);
+  letter-spacing: var(--ls-h3);
+  color: var(--c-titre);
+}
+
+.section-compte { font-size: var(--fs-meta); color: var(--c-texte-faible); }
+
+.alerte {
+  margin: var(--sp-2) 0 18px;
+  padding: 22px var(--sp-5);
+  border-radius: var(--r-feuille);
+  background: var(--c-alerte-fond);
+  border: var(--v-bordure-largeur) solid var(--c-alerte-bordure);
+  color: var(--c-alerte);
+  font-size: var(--fs-lead);
+  line-height: var(--lh-corps);
+  letter-spacing: var(--ls-corps);
+}
+
+.alerte[hidden] { display: none; }
+
+
+/* ----------------------------------------------------------------------------
+   GRILLE D'AFFICHES — 2 colonnes, l'image avant le texte
+   -------------------------------------------------------------------------- */
+
+.grille {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-grille-ligne) var(--sp-grille-col);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.carte {
+  display: block;
+  width: 100%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-carte);
+  text-align: left;
+  transition: scale var(--t-rapide) var(--courbe);
+}
+
+.carte:active { scale: var(--echelle-appui); }
+.carte:focus-visible { outline-offset: var(--sp-1); }
+
+/* display:block est indispensable : app.js fabrique un <span> (un <div>
+   serait invalide dans un <button>), et un élément en ligne ignore
+   aspect-ratio — l'affiche sortirait sans hauteur. */
+.carte__affiche {
+  display: block;
+  position: relative;
+  aspect-ratio: var(--affiche-ratio);
+  border-radius: var(--r-carte);
+  overflow: hidden;
+  box-shadow: var(--om-affiche), inset 0 0 0 1px rgba(var(--v-teinte-claire), .1);
+}
+
+/* Reflet oblique : la lumière qui glisse sur une surface vitrée. */
+.carte__affiche::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r-carte);
+  background: var(--v-voile-affiche);
+  box-shadow: var(--v-affiche-arete);
+}
+
+.carte__titre {
+  position: absolute;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: var(--sp-3);
+  z-index: var(--z-contenu);
+  font-size: var(--fs-corps);
+  font-weight: var(--fw-gras);
+  line-height: 1.2;
+  letter-spacing: var(--ls-titre);
+  color: var(--c-sur-verre);
+  text-shadow: var(--om-texte-affiche);
+}
+
+.carte__infos { display: block; padding: var(--sp-2) var(--sp-1) 0; }
+
+.carte__sous-titre {
+  font-size: var(--fs-petit);
+  color: var(--c-texte-faible);
+}
+
+
+/* ----------------------------------------------------------------------------
+   PASTILLE DE STATUT
+   Jamais la couleur seule : le point est toujours accompagné du libellé.
+   -------------------------------------------------------------------------- */
+
+.badge {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  z-index: var(--z-contenu);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px var(--sp-2);
+  border-radius: var(--r-badge);
+  color: var(--c-sur-verre);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-demi);
+  white-space: nowrap;
+}
+
+.badge[hidden] { display: none; }
+
+.badge--grand {
+  top: 22px;
+  right: var(--sp-4);
+  gap: 7px;
+  padding: 7px 13px;
+  font-size: var(--fs-petit);
+}
+
+.point {
+  width: var(--statut-point);
+  height: var(--statut-point);
+  flex: none;
+  border-radius: var(--r-pastille);
+  background: var(--point-couleur);
+  box-shadow: 0 0 var(--statut-lueur) var(--point-couleur);
+}
+
+.point--a-regarder { --point-couleur: var(--c-statut-a-voir); }
+.point--en-cours   { --point-couleur: var(--c-statut-en-cours); }
+.point--vu         { --point-couleur: var(--c-statut-vu); }
+
+
+/* ----------------------------------------------------------------------------
+   RAIL SEGMENTÉ — onglets de statut, sélecteur de la fiche
+   -------------------------------------------------------------------------- */
+
+.rail {
+  display: flex;
+  gap: var(--sp-1);
+  padding: var(--sp-1);
+  border-radius: var(--r-rail);
+}
+
+/* Variante creusée : posée sur la carte en verre de la fiche film. */
+.rail--creux {
+  background: var(--c-fond-creux);
+  border: var(--v-bordure-largeur) solid rgba(var(--v-teinte-claire), .08);
+  border-radius: var(--r-pilule);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: none;
+}
+
+.onglet {
+  flex: 1;
+  min-height: var(--tap-segment);
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--r-segment);
+  background: transparent;
+  color: var(--c-texte-inactif);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-moyen);
+  letter-spacing: var(--ls-corps);
+  transition: background var(--t-normal), color var(--t-normal);
+}
+
+.onglet[aria-selected="true"],
+.onglet[aria-pressed="true"] {
+  background: rgba(var(--v-teinte-claire), var(--v-opacite-active));
+  box-shadow: var(--om-selection);
+  color: var(--c-sur-verre);
+  font-weight: var(--fw-demi);
+}
+
+
+/* ----------------------------------------------------------------------------
+   MA WATCHLIST — compteur, état vide, lignes
+   -------------------------------------------------------------------------- */
+
+.liste-compte {
+  margin: 0;
+  padding: 0 var(--sp-1) var(--sp-3);
+  font-size: var(--fs-meta);
+  color: var(--c-texte-faible);
+}
+
+.vide {
+  padding: 34px var(--sp-6) var(--sp-7);
+  border-radius: 28px;
+  text-align: center;
+}
+
+.vide[hidden] { display: none; }
+
+.vide__titre {
+  margin: 0 0 6px;
+  font-size: 1.25rem;
+  font-weight: var(--fw-gras);
+  letter-spacing: var(--ls-titre);
+  color: var(--c-titre);
+}
+
+.vide__texte {
+  margin: 0 0 22px;
+  font-size: var(--fs-corps);
+  line-height: 1.55;
+  color: var(--c-texte-faible);
+}
+
+/* Bouton plein — le même accent que le bouton d'ajout de la fiche. */
+.bouton-clair {
+  min-height: var(--tap-champ);
+  padding: 0 26px;
+  border: 0;
+  border-radius: var(--r-champ);
+  background: var(--c-accent);
+  color: var(--c-accent-encre);
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-corps);
+  box-shadow: var(--om-accent-doux);
+  transition: scale var(--t-rapide) var(--courbe);
+}
+
+.bouton-clair:active { scale: var(--echelle-appui); }
+
+.lignes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-radius: var(--r-feuille);
+  overflow: hidden;
+}
+
+.lignes[hidden] { display: none; }
+
+.ligne {
+  display: flex;
+  gap: var(--sp-2);
+  align-items: center;
+  padding: var(--sp-3);
+}
+
+/* Un filet sépare les lignes, sauf avant la première. */
+.ligne + .ligne { border-top: 1px solid rgba(var(--v-teinte-claire), .08); }
+
+.ligne__ouvrir {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  text-align: left;
+}
+
+.ligne__ouvrir:focus-visible {
+  outline-offset: var(--sp-1);
+  border-radius: var(--r-etiquette);
+}
+
+.ligne__affiche {
+  display: block;
+  position: relative;
+  width: var(--affiche-mini);
+  flex: none;
+  aspect-ratio: var(--affiche-ratio);
+  border-radius: var(--r-mini);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(var(--v-teinte-claire), .12);
+}
+
+.ligne__titre {
+  font-size: var(--fs-lead);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-titre);
+  color: var(--c-titre);
+  line-height: var(--lh-titre);
+}
+
+.ligne__meta {
+  margin-top: var(--sp-1);
+  font-size: var(--fs-petit);
+  color: var(--c-texte-faible);
+}
+
+/* Les deux boutons ronds de fin de ligne */
+.ligne__action {
+  width: var(--tap-min);
+  height: var(--tap-min);
+  flex: none;
+  border-radius: var(--r-pilule);
+  background: rgba(var(--v-teinte-claire), var(--v-opacite-moyen));
+  border: var(--v-bordure-largeur) solid var(--v-bordure);
+  box-shadow: inset 0 1px 0 rgba(var(--v-teinte-claire), .2);
+  color: var(--c-sur-verre);
+  font-size: var(--fs-lead);
+  transition: scale var(--t-rapide) var(--courbe);
+}
+
+.ligne__action:active { scale: var(--echelle-rond); }
+
+.ligne__action--retirer {
+  background: var(--c-alerte-fond);
+  border-color: var(--c-alerte-bordure);
+  box-shadow: none;
+  color: var(--c-alerte);
+  font-size: var(--fs-input);
+}
+
+.ligne__action--retirer:focus-visible { outline-color: var(--c-alerte); }
+
+
+/* ----------------------------------------------------------------------------
+   NAVIGATION FLOTTANTE
+   Toujours visible (pas de menu hamburger), toujours sous le pouce.
+   -------------------------------------------------------------------------- */
+
+.nav {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  translate: -50% 0;
+  z-index: var(--z-nav);
+  display: flex;
+  gap: var(--sp-1);
+  padding: 5px;
+  border-radius: var(--r-nav);
+}
+
+.nav[hidden] { display: none; }
+
+.nav__item {
+  min-height: var(--tap-champ);
+  padding: 0 var(--sp-6);
+  border: 0;
+  border-radius: 26px;
+  background: transparent;
+  color: var(--c-texte-inactif);
+  font-size: var(--fs-corps);
+  font-weight: var(--fw-moyen);
+  letter-spacing: var(--ls-corps);
+  white-space: nowrap;
+  transition: background var(--t-normal), color var(--t-normal);
+}
+
+.nav__item[aria-current="page"] {
+  background: rgba(var(--v-teinte-claire), var(--v-opacite-active));
+  box-shadow: var(--om-selection);
+  color: var(--c-sur-verre);
+  font-weight: var(--fw-demi);
+}
+
+
+/* ----------------------------------------------------------------------------
+   FICHE FILM
+   -------------------------------------------------------------------------- */
+
+.ecran--fiche {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-fiche);
+  background: var(--c-fond-app);
+  animation: fiche-monte var(--t-feuille) var(--courbe-feuille) both;
+}
+
+@keyframes fiche-monte {
+  from { opacity: 0; translate: 0 40px; scale: .97; }
+  to   { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+/* Lueur reprise de la couleur de l'affiche, derrière tout le contenu. */
+.fiche__ambiance {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(90% 60% at 50% 70%, var(--film-c2) 0%, transparent 70%);
+  opacity: .33;
+}
+
+.ecran--fiche .defilement {
+  position: relative;
+  padding: 0 0 var(--sp-reserve-cta);
+}
+
+.fiche__haut {
+  position: relative;
+  height: var(--fiche-hauteur);
+  min-height: var(--fiche-min);
+}
+
+.fiche__affiche { position: absolute; inset: 0; }
+
+.fiche__fondu {
+  position: absolute;
+  inset: 0;
+  background: var(--v-fondu-affiche);
+}
+
+.fiche__retour {
+  position: absolute;
+  top: var(--sp-4);
+  left: var(--sp-4);
+  z-index: var(--z-contenu);
+  width: var(--tap-min);
+  height: var(--tap-min);
+  border-radius: var(--r-pilule);
+  color: var(--c-sur-verre);
+  font-size: 19px;
+  transition: scale var(--t-rapide) var(--courbe);
+}
+
+.fiche__retour:active { scale: var(--echelle-rond); }
+
+/* La carte mord sur le bas de l'affiche : c'est elle qui tient le contenu. */
+.fiche__carte {
+  position: relative;
+  margin: var(--fiche-remontee) var(--sp-3) 0;
+  padding: 22px var(--sp-5);
+  border-radius: var(--r-fiche);
+}
+
+.fiche__titre {
+  margin: 0;
+  font-size: var(--fs-h2);
+  font-weight: var(--fw-gras);
+  line-height: 1.12;
+  letter-spacing: var(--ls-h2);
+  color: var(--c-titre);
+  text-wrap: pretty;
+}
+
+.fiche__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--sp-3);
+}
+
+.tag {
+  padding: 6px 11px;
+  border-radius: var(--r-etiquette);
+  background: rgba(var(--v-teinte-claire), var(--v-opacite-moyen));
+  border: var(--v-bordure-largeur) solid rgba(var(--v-teinte-claire), .1);
+  font-size: var(--fs-petit);
+  font-weight: var(--fw-moyen);
+  color: var(--c-texte-doux);
+}
+
+/* La note garde l'ambre doré du brief */
+.tag--note {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--c-note-fond);
+  border-color: var(--c-note-bordure);
+  color: var(--c-note);
+  font-weight: var(--fw-gras);
+}
+
+.fiche__realisation {
+  margin-top: 18px;
+  padding-top: var(--sp-4);
+  border-top: 1px solid rgba(var(--v-teinte-claire), .1);
+}
+
+.fiche__label {
+  margin: 0;
+  font-size: var(--fs-petit);
+  color: var(--c-texte-faible);
+}
+
+.fiche__valeur {
+  margin: var(--sp-1) 0 0;
+  font-size: var(--fs-input);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-titre);
+  color: var(--c-titre);
+}
+
+.fiche__synopsis {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-lead);
+  line-height: var(--lh-corps);
+  letter-spacing: var(--ls-fin);
+  color: var(--c-texte-doux);
+  text-wrap: pretty;
+}
+
+.fiche__statut { margin-top: var(--sp-5); }
+.fiche__statut[hidden] { display: none; }
+.fiche__statut .fiche__label { margin-bottom: var(--sp-2); }
+
+/* Barre d'action — collée en bas, jamais besoin de scroller pour l'atteindre */
+.fiche__barre {
+  position: absolute;
+  left: var(--sp-3);
+  right: var(--sp-3);
+  bottom: var(--sp-5);
+  z-index: var(--z-contenu);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--sp-2);
+  border-radius: var(--r-barre);
+  box-shadow: inset 0 1px 0 var(--v-reflet-vif), var(--om-barre);
+}
+
+.fiche__cta {
+  width: 100%;
+  min-height: var(--tap-cta);
+  border: 0;
+  border-radius: var(--r-bouton);
+  background: var(--c-accent);
+  color: var(--c-accent-encre);
+  font-size: var(--fs-input);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-titre);
+  box-shadow: var(--om-accent);
+  transition: background var(--t-normal), color var(--t-normal);
+}
+
+/* Déjà dans la watchlist : le bouton redevient du verre. */
+.fiche__cta[data-ajoute="oui"] {
+  background: rgba(var(--v-teinte-claire), .14);
+  box-shadow: inset 0 1px 0 var(--v-reflet-vif);
+  color: var(--c-sur-verre);
+}
+
+.fiche__retirer {
+  width: 100%;
+  min-height: var(--tap-min);
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-pilule);
+  color: var(--c-alerte);
+  font-size: var(--fs-corps);
+  font-weight: var(--fw-moyen);
+}
+
+.fiche__retirer[hidden] { display: none; }
+.fiche__retirer:hover { background: var(--c-alerte-fond); }
+.fiche__retirer:focus-visible { outline-color: var(--c-alerte); }
+
+
+/* ----------------------------------------------------------------------------
+   MESSAGE DE CONFIRMATION (toast)
+   -------------------------------------------------------------------------- */
+
+.toast {
+  position: absolute;
+  top: var(--sp-3);
+  left: 50%;
+  translate: -50% 0;
+  z-index: var(--z-toast);
+  width: 300px;
+  max-width: calc(100% - var(--sp-8));
+  margin: 0;
+  padding: 13px 18px;
+  border-radius: var(--r-feuille);
+  color: var(--c-sur-verre);
+  font-size: var(--fs-meta);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-corps);
+  text-align: center;
+  box-shadow: inset 0 1px 0 var(--v-reflet-vif), var(--om-toast);
+  animation: toast-passe var(--t-toast) var(--courbe-feuille) both;
+}
+
+.toast[hidden] { display: none; }
+
+@keyframes toast-passe {
+  0%   { opacity: 0; translate: -50% -14px; scale: .9; }
+  12%  { opacity: 1; translate: -50% 0; scale: 1; }
+  84%  { opacity: 1; translate: -50% 0; scale: 1; }
+  100% { opacity: 0; translate: -50% -8px; scale: .96; }
+}
+
+
+/* ----------------------------------------------------------------------------
+   TRANSITIONS ENTRE ÉCRANS (View Transitions)
+   Amélioration progressive : si le navigateur ne connaît pas la
+   fonctionnalité, l'écran change d'un coup et tout continue de marcher.
+   -------------------------------------------------------------------------- */
+
+/* L'affiche touchée et l'affiche de la fiche portent le même nom : le
+   navigateur fait grandir l'une vers l'autre au lieu de les faire clignoter.
+   Un seul élément peut porter ce nom à la fois — app.js retire la classe
+   .carte--ouverte dès que la transition est finie. */
+.carte--ouverte .carte__affiche,
+.ecran--fiche .fiche__affiche { view-transition-name: affiche-active; }
+
+::view-transition-old(affiche-active),
+::view-transition-new(affiche-active) { height: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) { animation: none !important; }
+
+  .ecran,
+  .ecran--fiche,
+  .toast { animation-duration: .01s; }
+}
+
+
+/* ----------------------------------------------------------------------------
+   COMPLÉMENTS
+   Petites règles ajoutées en branchant le JavaScript : app.js fabrique
+   des <span>, qui sont en ligne par défaut et doivent passer en bloc.
+   -------------------------------------------------------------------------- */
+
+/* Sous la carte : le titre, puis année · genre. */
+.carte__nom {
+  display: block;
+  font-size: var(--fs-corps);
+  font-weight: var(--fw-demi);
+  letter-spacing: var(--ls-corps);
+  line-height: var(--lh-titre);
+  color: var(--c-titre);
+}
+
+.carte__sous-titre {
+  display: block;
+  margin-top: 3px;
+}
+
+/* Colonne texte d'une ligne de watchlist */
+.ligne__texte { min-width: 0; }
+.ligne__titre,
+.ligne__meta { display: block; }
+
+/* Texte réservé aux lecteurs d'écran : il donne le sens d'un symbole
+   (ici l'étoile de la note) sans l'afficher à l'écran. */
+.u-lecteur {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

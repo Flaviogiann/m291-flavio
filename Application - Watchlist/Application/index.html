@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Watchlist</title>
+  <meta name="description" content="Gardez les films que vous voulez voir et suivez ceux que vous avez déjà regardés.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- ====================================================================
+       HALOS D'AMBIANCE
+       Décoratif : c'est la lumière que la matière verre capte et diffuse.
+       ==================================================================== -->
+  <div class="halos" aria-hidden="true">
+    <div class="halo halo--1"></div>
+    <div class="halo halo--2"></div>
+    <div class="halo halo--3"></div>
+  </div>
+
+
+  <!-- ====================================================================
+       ÉCRAN 1 — ACCUEIL / RECHERCHE
+       ==================================================================== -->
+  <section class="ecran" id="ecran-accueil" aria-labelledby="titre-accueil" tabindex="-1">
+
+    <header class="entete">
+      <h1 class="titre-ecran" id="titre-accueil">Watchlist</h1>
+
+      <form class="recherche verre verre--fin" role="search" autocomplete="off">
+        <svg class="recherche__loupe" width="17" height="17" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+          <circle cx="7.5" cy="7.5" r="5.5" stroke="currentColor" stroke-width="1.8"/>
+          <line x1="11.6" y1="11.6" x2="16" y2="16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <input class="recherche__champ" id="champ-recherche" type="search"
+               placeholder="Chercher un film" aria-label="Chercher un film par titre">
+        <button class="recherche__effacer" id="bouton-effacer" type="button"
+                aria-label="Effacer la recherche" hidden><span aria-hidden="true">×</span></button>
+      </form>
+
+      <!-- Pilules de genre — remplies par app.js depuis les genres des films -->
+      <div class="filtres" id="filtres" role="group" aria-label="Filtrer par genre"></div>
+    </header>
+
+    <div class="defilement">
+
+      <!-- Recherches récentes — masqué tant qu'il n'y en a pas -->
+      <section class="recentes" id="recentes" aria-labelledby="titre-recentes" hidden>
+        <h2 class="recentes__titre" id="titre-recentes">Recherches récentes</h2>
+        <div class="recentes__liste" id="recentes-liste"></div>
+      </section>
+
+      <div class="section-entete">
+        <h2 class="section-titre" id="grille-titre">À l'affiche</h2>
+        <span class="section-compte" id="grille-compte"></span>
+      </div>
+
+      <p class="alerte" id="aucun-resultat" hidden>
+        Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.
+      </p>
+
+      <!-- Affiché seulement si data/films.json n'a pas pu être lu -->
+      <p class="alerte" id="erreur-chargement" role="alert" hidden></p>
+
+      <!-- Grille d'affiches — remplie par app.js -->
+      <ul class="grille" id="grille"></ul>
+
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       ÉCRAN 3 — MA WATCHLIST
+       ==================================================================== -->
+  <section class="ecran" id="ecran-liste" aria-labelledby="titre-liste" tabindex="-1" hidden>
+
+    <header class="entete">
+      <h1 class="titre-ecran" id="titre-liste">Ma Watchlist</h1>
+
+      <!-- Onglets de statut — remplis par app.js -->
+      <div class="rail verre verre--fin" id="onglets" role="tablist" aria-label="Filtrer par statut"></div>
+    </header>
+
+    <div class="defilement">
+      <p class="liste-compte" id="liste-compte"></p>
+
+      <!-- État vide -->
+      <div class="vide verre verre--voile" id="liste-vide" hidden>
+        <p class="vide__titre" id="vide-titre"></p>
+        <p class="vide__texte">Cherchez un titre et ajoutez-le pour le retrouver ici.</p>
+        <button class="bouton-clair" type="button" data-aller="accueil">Chercher un film</button>
+      </div>
+
+      <!-- Lignes de films — remplies par app.js -->
+      <ul class="lignes verre verre--voile" id="lignes"></ul>
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       NAVIGATION — toujours visible, sauf sur la fiche film
+       ==================================================================== -->
+  <nav class="nav verre verre--flottant" id="nav" aria-label="Navigation principale">
+    <button class="nav__item" id="nav-accueil" type="button" data-aller="accueil">Accueil</button>
+    <button class="nav__item" id="nav-liste" type="button" data-aller="liste">Ma Watchlist</button>
+  </nav>
+
+
+  <!-- ====================================================================
+       ÉCRAN 2 — FICHE FILM
+       Posée par-dessus les autres écrans. Le bouton d'ajout est dans une
+       barre fixe en bas : jamais besoin de scroller pour l'atteindre.
+       ==================================================================== -->
+  <section class="ecran ecran--fiche" id="ecran-fiche" aria-labelledby="fiche-titre" tabindex="-1" hidden>
+
+    <div class="fiche__ambiance" id="fiche-ambiance" aria-hidden="true"></div>
+
+    <div class="defilement">
+
+      <div class="fiche__haut">
+        <div class="fiche__affiche affiche-lumiere" id="fiche-affiche"></div>
+        <div class="fiche__fondu" aria-hidden="true"></div>
+
+        <button class="fiche__retour verre verre--pastille" id="bouton-retour" type="button"
+                aria-label="Retour aux résultats"><span aria-hidden="true">←</span></button>
+
+        <div class="badge badge--grand verre verre--pastille" id="fiche-badge" hidden></div>
+      </div>
+
+      <div class="fiche__carte verre verre--epais">
+        <h1 class="fiche__titre" id="fiche-titre"></h1>
+
+        <div class="fiche__tags" id="fiche-tags"></div>
+
+        <div class="fiche__realisation">
+          <p class="fiche__label">Réalisation</p>
+          <p class="fiche__valeur" id="fiche-realisation"></p>
+        </div>
+
+        <p class="fiche__synopsis" id="fiche-synopsis"></p>
+
+        <!-- Sélecteur de statut — visible seulement si le film est enregistré -->
+        <div class="fiche__statut" id="fiche-statut" hidden>
+          <p class="fiche__label">Statut</p>
+          <div class="rail rail--creux" id="fiche-picker" role="group" aria-label="Changer le statut"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="fiche__barre verre verre--flottant">
+      <button class="fiche__cta" id="fiche-cta" type="button"></button>
+      <button class="fiche__retirer" id="fiche-retirer" type="button" hidden>Retirer de ma watchlist</button>
+    </div>
+  </section>
+
+
+  <!-- ====================================================================
+       MESSAGE DE CONFIRMATION
+       ==================================================================== -->
+  <p class="toast verre verre--flottant" id="toast" role="status" aria-live="polite" hidden></p>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
