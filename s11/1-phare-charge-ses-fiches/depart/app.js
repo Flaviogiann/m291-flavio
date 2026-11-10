@@ -41,22 +41,3 @@ function afficherLieux(liste) {
 }
 
 // ----- Votre code de la semaine 11 commence ici -----
-
-zoneEtat.textContent = "Chargement des lieux…";
-
-fetch("data-absent.json")
-.then(function (reponse) {
-if (!reponse.ok) {
-throw new Error("Fichier introuvable : code " + reponse.status);
-}
-return reponse.json();
-})
-.then(function (donnees) {
-zoneEtat.textContent = "";
-tousLesLieux = donnees;
-})
-.catch(function (erreur) {
-console.error(erreur);
-zoneEtat.textContent = "Impossible de charger les lieux. Rechargez la page dans un moment.";
-});
-
