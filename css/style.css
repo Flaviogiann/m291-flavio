@@ -137,6 +137,11 @@
   --v-flou:           26px;            /* ← LE DÉPOLI                         */
   --v-saturation:     200%;            /* ← LA VIVACITÉ DE CE QU'ON VOIT      */
 
+  /* Fond de verre par défaut, pour les éléments qui en veulent un sans
+     porter la classe .verre (la zone d'état, par exemple). .verre, lui,
+     recompose le sien à partir des deux variables ci-dessus : voir le
+     commentaire de la règle .verre, qui explique pourquoi il ne peut pas
+     se contenter de lire celle-ci. */
   --v-fond:           rgba(var(--v-teinte-rvb), var(--v-opacite));
   --v-bordure:        rgba(255, 255, 255, .14);
   --v-bordure-largeur: 1px;
@@ -474,7 +479,21 @@ input { font-family: inherit; }
    ============================================================================ */
 
 .verre {
-  background: var(--v-fond);
+  /* LE FOND EST COMPOSÉ ICI, PAS SUR :root.
+
+     Un var() écrit à l'intérieur d'une custom property est résolu sur
+     l'élément où cette propriété est DÉCLARÉE, pas où elle est lue.
+     Composer --v-fond sur :root lui donnait donc une bonne fois pour
+     toutes la valeur rgba(blanc, .055), héritée telle quelle : les
+     --v-opacite et --v-teinte-rvb des variantes ci-dessous ne
+     changeaient rien au fond, et les cinq verres avaient exactement
+     la même transparence. Seuls le flou et la bordure variaient.
+
+     En écrivant rgba() directement dans la règle, la substitution se
+     fait sur l'élément qui porte .verre : chaque variante retrouve
+     son fond. C'est le même piège que le dégradé des affiches, qui a
+     dû sortir de :root pour la même raison. */
+  background: rgba(var(--v-teinte-rvb), var(--v-opacite));
   border: var(--v-bordure-largeur) solid var(--v-bordure);
   backdrop-filter: blur(var(--v-flou)) saturate(var(--v-saturation));
   -webkit-backdrop-filter: blur(var(--v-flou)) saturate(var(--v-saturation));
@@ -506,7 +525,10 @@ input { font-family: inherit; }
 
 /* Carte de la fiche film — le verre le plus épais */
 .verre--epais {
-  --v-opacite:      .05;
+  /* .05 en dur jusqu'ici, c'est-à-dire MOINS que --verre--fin (.055) :
+     le verre le plus épais était le plus transparent. Personne ne l'avait
+     vu parce qu'aucun de ces fonds ne s'appliquait (voir .verre). */
+  --v-opacite:      var(--v-opacite-moyen);
   --v-flou:         var(--v-flou-intense);
   --v-saturation:   var(--v-saturation-forte);
   --v-bordure:      var(--v-bordure-nette);
@@ -834,19 +856,31 @@ input { font-family: inherit; }
 
 .section-compte { font-size: var(--fs-meta); color: var(--c-texte-faible); }
 
-.alerte {
+/* ZONE D'ÉTAT — le paragraphe #etat porte les quatre états du chargement.
+   Trois sont neutres : « chargement » et « vide » s'affichent en verre
+   sobre, « affichée » n'a pas de texte donc le paragraphe est masqué.
+   Seule l'erreur passe en corail. L'utilisateur distingue ainsi
+   « il n'y a rien à montrer » de « ça n'a pas marché » avant même
+   d'avoir lu la phrase. */
+.etat {
   margin: var(--sp-2) 0 18px;
   padding: 22px var(--sp-5);
   border-radius: var(--r-feuille);
-  background: var(--c-alerte-fond);
-  border: var(--v-bordure-largeur) solid var(--c-alerte-bordure);
-  color: var(--c-alerte);
+  background: var(--v-fond);
+  border: var(--v-bordure-largeur) solid var(--v-bordure);
+  color: var(--c-texte-doux);
   font-size: var(--fs-lead);
   line-height: var(--lh-corps);
   letter-spacing: var(--ls-corps);
 }
 
-.alerte[hidden] { display: none; }
+.etat--erreur {
+  background: var(--c-alerte-fond);
+  border-color: var(--c-alerte-bordure);
+  color: var(--c-alerte);
+}
+
+.etat[hidden] { display: none; }
 
 
 /* ----------------------------------------------------------------------------
@@ -942,6 +976,20 @@ input { font-family: inherit; }
 }
 
 .badge[hidden] { display: none; }
+
+/* Coup de cœur — en haut à GAUCHE, parce que la pastille de statut
+   occupe déjà le coin droit. Les deux badges peuvent cohabiter sur
+   la même affiche sans se chevaucher. */
+.badge--coeur {
+  right: auto;
+  left: var(--sp-2);
+  padding: 5px 9px;
+  color: var(--c-note);
+  font-size: var(--fs-petit);
+  line-height: 1;
+  --v-teinte-rvb: 255, 200, 90;
+  --v-opacite: .16;
+}
 
 .badge--grand {
   top: 22px;
@@ -1294,6 +1342,15 @@ input { font-family: inherit; }
   border-color: var(--c-note-bordure);
   color: var(--c-note);
   font-weight: var(--fw-gras);
+}
+
+/* Coup de cœur — l'étiquette « recommande » quand elle vaut true.
+   Même ambre que la note : les deux parlent de la qualité du film. */
+.tag--coeur {
+  background: var(--c-note-fond);
+  border-color: var(--c-note-bordure);
+  color: var(--c-note);
+  font-weight: var(--fw-demi);
 }
 
 .fiche__realisation {

@@ -64,15 +64,14 @@
         <span class="section-compte" id="grille-compte"></span>
       </div>
 
-      <p class="alerte" id="aucun-resultat" hidden>
-        Aucun film trouvé. Vérifiez l'orthographe ou essayez un autre titre.
-      </p>
+      <!-- ZONE D'ÉTAT — un seul paragraphe pour les quatre états du
+           chargement : chargement, erreur, vide, affichée (vide alors).
+           role="status" le fait annoncer par les lecteurs d'écran dès
+           que son texte change, sans voler le focus. -->
+      <p class="etat" id="etat" role="status"></p>
 
-      <!-- Affiché seulement si data/films.json n'a pas pu être lu -->
-      <p class="alerte" id="erreur-chargement" role="alert" hidden></p>
-
-      <!-- Grille d'affiches — remplie par app.js -->
-      <ul class="grille" id="grille"></ul>
+      <!-- Grille d'affiches — remplie par app.js (le « conteneur ») -->
+      <ul class="grille" id="grille" hidden></ul>
 
     </div>
   </section>
