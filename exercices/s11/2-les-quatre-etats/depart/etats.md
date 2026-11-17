@@ -15,8 +15,8 @@ Remplissez une ligne par test, avec ce que vous **voyez**, pas ce que vous atten
 
 1. Dans quel test l'onglet Réseau dit-il `200` alors que la page échoue ? Pourquoi ?
 
-   Réponse :
+   Réponse : le fichier est arrivé entier, mais une virgule en trop le rend illisible.
 
 2. Au test 2, que devient le message « Chargement des lieux… » ? Qu'est-ce que la personne qui attend en conclut ?
 
-   Réponse : il est toujours présent, 
+   Réponse : il est toujours présent et ne part pas 
