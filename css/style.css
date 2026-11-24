@@ -368,6 +368,10 @@
   --t-ecran:       .35s;   /* apparition d'un écran            */
   --t-feuille:     .42s;   /* montée de la fiche film          */
   --t-toast:      2.40s;   /* durée totale d'un message        */
+  --t-carte:       .26s;   /* apparition d'une carte filtrée   */
+
+  --pas-carte:    .022s;   /* décalage d'une carte à la suivante */
+  --cartes-palier:    6;   /* au-delà, elles apparaissent ensemble */
 
   --courbe:        cubic-bezier(.2, .8, .2, 1);
   --courbe-feuille:cubic-bezier(.2, .9, .2, 1);
@@ -894,6 +898,51 @@ input { font-family: inherit; }
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Apparition des cartes à chaque filtrage.
+   app.js refabrique tous les <li> à chaque rendu : une animation CSS
+   posée ici repart donc d'elle-même à chaque recherche et à chaque
+   changement de genre, sans rien à relancer en JavaScript. C'est
+   l'inverse du toast, qui est un élément unique dont seul le texte
+   change, et qu'il faut relancer à la main.
+   « both » maintient l'opacité à 0 pendant le délai : sans lui, une
+   carte en attente de son tour serait visible, puis disparaîtrait. */
+.grille > li {
+  animation: carte-entre var(--t-carte) var(--courbe) both;
+}
+
+@keyframes carte-entre {
+  from { opacity: 0; translate: 0 8px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* Chaque carte part un peu après la précédente : l'œil suit la vague
+   au lieu de recevoir trente cartes d'un coup. sibling-index() donne le
+   rang de l'élément dans son parent, en commençant à 1.
+   min() plafonne le décalage : sans lui, la trentième carte attendrait
+   plus d'une demi-seconde, ce qui est trop long quand on tape au clavier
+   et que la grille se refait à chaque lettre.
+   Le @supports porte une durée écrite en clair, jamais une variable :
+   un calc() qui contient var() est accepté à l'analyse par tous les
+   navigateurs, donc le test répondrait « oui » même là où la fonction
+   n'existe pas, et le délai retomberait à 0. */
+@supports (animation-delay: calc(sibling-index() * 0.1s)) {
+  .grille > li {
+    animation-delay: calc(min(sibling-index(), var(--cartes-palier)) * var(--pas-carte));
+  }
+}
+
+/* Repli pour les navigateurs sans sibling-index(). Il est enfermé dans
+   un @supports not : :nth-child() est plus spécifique que la règle
+   ci-dessus et l'écraserait là où la fonction existe. */
+@supports not (animation-delay: calc(sibling-index() * 0.1s)) {
+  .grille > li:nth-child(1) { animation-delay: calc(var(--pas-carte) * 1); }
+  .grille > li:nth-child(2) { animation-delay: calc(var(--pas-carte) * 2); }
+  .grille > li:nth-child(3) { animation-delay: calc(var(--pas-carte) * 3); }
+  .grille > li:nth-child(4) { animation-delay: calc(var(--pas-carte) * 4); }
+  .grille > li:nth-child(5) { animation-delay: calc(var(--pas-carte) * 5); }
+  .grille > li:nth-child(n+6) { animation-delay: calc(var(--pas-carte) * 6); }
 }
 
 .carte {
@@ -1496,6 +1545,11 @@ input { font-family: inherit; }
   .ecran,
   .ecran--fiche,
   .toast { animation-duration: .01s; }
+
+  /* Les cartes apparaissent sans mouvement ni fondu. Cette règle doit
+     rester après celle de la grille : à spécificité égale, c'est la
+     dernière écrite qui gagne. */
+  .grille > li { animation: none; }
 }
 
 
