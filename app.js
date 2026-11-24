@@ -128,7 +128,10 @@
        Le + this.statuts.length n'est pas décoratif : en JavaScript le
        reste garde le signe du dividende, donc -1 % 3 vaut -1 et non 2.
        Sans lui, reculer depuis « À regarder » donnerait undefined.
-       Un statut inconnu ramène au premier, comme le fait suivant(). */
+       Un statut inconnu ramène au premier, comme le fait suivant().
+       Ce bouclage est un filet, pas une fonctionnalité : rendreListe()
+       ne pose pas le bouton ← sur le premier statut, donc le cas ne
+       se produit pas par l'interface. */
     precedent(statut) {
       const i = this.statuts.indexOf(statut);
       if (i === -1) { return this.statuts[0]; }
@@ -625,10 +628,22 @@
       ouvrir.append(affiche, texte);
 
       const item = creer("li", "ligne");
+      item.appendChild(ouvrir);
+
+      /* Pas de ← sur le premier statut : il n'y a rien avant
+         « À regarder », et y faire apparaître « Vu » serait absurde.
+         Le → boucle, lui : avancer encore depuis « Vu » pour tout
+         reprendre à zéro reste une intention compréhensible.
+         Conséquence voulue : l'onglet « À regarder » n'a que deux
+         boutons, et ses titres récupèrent la place du troisième. */
+      if (etat.statuts[f.id] !== WL.statuts[0]) {
+        item.appendChild(
+          actionLigne("ligne__action", "reculer", f.id, "←",
+            "Ramener " + f.titre + " au statut précédent")
+        );
+      }
+
       item.append(
-        ouvrir,
-        actionLigne("ligne__action", "reculer", f.id, "←",
-          "Ramener " + f.titre + " au statut précédent"),
         actionLigne("ligne__action", "cycler", f.id, "→",
           "Passer " + f.titre + " au statut suivant"),
         actionLigne("ligne__action ligne__action--retirer", "retirer", f.id, "×",
