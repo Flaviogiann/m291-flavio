@@ -301,6 +301,24 @@
     clearTimeout(minuteurToast);
     el.toast.textContent = message;
     montrer(el.toast, true);
+
+    /* Relancer l'animation à chaque message.
+       Une animation CSS démarre quand l'élément apparaît, puis suit
+       son cours : changer son texte ne la rejoue pas. Un deuxième statut
+       changé dans les 2,4 s du premier héritait donc de la fin de
+       l'animation en cours — à 2,25 s l'opacité valait 0,017, le texte
+       était écrit dans un élément devenu invisible.
+       On retire donc l'animation, on force le navigateur à recalculer le
+       style tout de suite, puis on la rend à la feuille : elle repart de
+       zéro. Lire offsetWidth ne sert à rien d'autre qu'à déclencher ce
+       recalcul — sans lui, le navigateur regrouperait les deux lignes
+       et ne verrait aucun changement. */
+    el.toast.style.animation = "none";
+    void el.toast.offsetWidth;
+    el.toast.style.animation = "";
+
+    /* 2400 doit rester égal à --t-toast dans la feuille de style, sans
+       quoi le masquage et la fin de l'animation ne tombent plus ensemble. */
     minuteurToast = setTimeout(function () {
       montrer(el.toast, false);
     }, 2400);
