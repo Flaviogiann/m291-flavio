@@ -124,6 +124,17 @@
       return this.statuts[(i + 1) % this.statuts.length];
     },
 
+    /* Le statut d'avant dans le cycle, miroir de suivant().
+       Le + this.statuts.length n'est pas décoratif : en JavaScript le
+       reste garde le signe du dividende, donc -1 % 3 vaut -1 et non 2.
+       Sans lui, reculer depuis « À regarder » donnerait undefined.
+       Un statut inconnu ramène au premier, comme le fait suivant(). */
+    precedent(statut) {
+      const i = this.statuts.indexOf(statut);
+      if (i === -1) { return this.statuts[0]; }
+      return this.statuts[(i - 1 + this.statuts.length) % this.statuts.length];
+    },
+
     /* Lecture du stockage. Renvoie toujours un objet, même si rien
        n'est enregistré ou si le JSON est illisible. */
     lire() {
@@ -616,6 +627,8 @@
       const item = creer("li", "ligne");
       item.append(
         ouvrir,
+        actionLigne("ligne__action", "reculer", f.id, "←",
+          "Ramener " + f.titre + " au statut précédent"),
         actionLigne("ligne__action", "cycler", f.id, "→",
           "Passer " + f.titre + " au statut suivant"),
         actionLigne("ligne__action ligne__action--retirer", "retirer", f.id, "×",
@@ -836,6 +849,18 @@
       if (d.filtre !== undefined) {
         etat.filtre = Number(d.filtre);
         rendreOnglets();
+        rendreListe();
+        return;
+      }
+
+      /* Statut précédent depuis une ligne.
+         La flèche du message veut dire « devient », pas « avance » :
+         c'est le même format que pour le bouton suivant, pour ne pas
+         avoir deux façons d'écrire la même information. */
+      if (d.reculer) {
+        const avant = WL.precedent(etat.statuts[d.reculer]);
+        definirStatut(d.reculer, avant);
+        flash(WL.parId(d.reculer).titre + " → " + avant);
         rendreListe();
         return;
       }
